@@ -18,5 +18,5 @@ func (au ArticleUser) GetArticleUser() ([]model.ArticleUser, error) {
 	if err != nil {
 		return make([]model.ArticleUser, 0), err
 	}
-	return db.GetArticleUser(userId, au.LastTime, au.Logger), nil
+	return db.GetArticleUser(userId, au.LastTime, au.Logger)
 }

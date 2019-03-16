@@ -27,13 +27,13 @@ func wipe(dbLogger logger.DbLogger) {
 func main() {
 	err := db.DBOpen()
 	if err != nil {
-		var consoleLogger = logger.ConsoleLogger{}
-		consoleLogger.Log("ERROR", "MAIN", "Can't open DB. The service will be closed.")
+		var log = logger.ConsoleLogger{}
+		log.Log("ERROR", "MAIN", "Can't open DB. The service will be closed.")
 		return
 	}
-	dbLogger := logger.DbLogger{DB: db.DB}
-	go read(dbLogger)
-	go wipe(dbLogger)
-	controllers.Init(dbLogger)
 	defer db.DBClose()
+	log := logger.DbLogger{DB: db.DB}
+	go read(log)
+	go wipe(log)
+	controllers.Init(log)
 }

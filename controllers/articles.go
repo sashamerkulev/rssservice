@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sashamerkulev/rssservice/domain"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -21,11 +22,12 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 		datetime, _ = time.Parse("2006-01-02 15:04:05", val)
 	}
 	userDbLogger.Log("DEBUG", "ARTICLES", r.RequestURI)
-
+	token := r.Header.Get("Authorization")
+	token = strings.Replace(token, "Bearer ", "", -1)
 	au := domain.ArticleUser{
 		LastTime:  datetime,
 		Logger:    userDbLogger,
-		UserToken: "token",
+		UserToken: token,
 	}
 	articles, err := au.GetArticleUser()
 	if err != nil {

@@ -15,7 +15,7 @@ type links struct {
 	Name   string
 }
 
-var urls = []links{
+var Urls = []links{
 	{Link: "http://lenta.ru/rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "lenta"},
 	{Link: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/mainnews.rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "rbc"},
 	{Link: "http://worldoftanks.ru/ru/rss/news/", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "wot"},
@@ -115,10 +115,10 @@ func save(saver model.ConsumerArticleFunc, id int, items []item, logger logger.L
 	}
 	var articles = make([]model.Article, 0)
 	for i := 0; i < len(items); i++ {
-		date, err := time.Parse(urls[id].Layout, items[i].PubDate)
+		date, err := time.Parse(Urls[id].Layout, items[i].PubDate)
 		if err == nil {
 			article := model.Article{
-				SourceName:  urls[id].Name,
+				SourceName:  Urls[id].Name,
 				Category:    items[i].Category,
 				Description: string(items[i].Description),
 				Link:        items[i].Link,
@@ -128,18 +128,18 @@ func save(saver model.ConsumerArticleFunc, id int, items []item, logger logger.L
 			}
 			articles = append(articles, article)
 		} else {
-			logger.Log("ERROR", "SAVE ("+urls[i].Name+")", err.Error())
+			logger.Log("ERROR", "SAVE ("+Urls[i].Name+")", err.Error())
 		}
 	}
 	saver(articles, logger)
 }
 
 func Do(consumer model.ConsumerArticleFunc, logger logger.Logger) {
-	for i := 0; i < len(urls); i++ {
+	for i := 0; i < len(Urls); i++ {
 		bytes := make(chan []byte)
 		items := make(chan []item)
-		go read(urls[i].Link, bytes, logger)
-		go parse(urls[i].Name, <-bytes, items, logger)
+		go read(Urls[i].Link, bytes, logger)
+		go parse(Urls[i].Name, <-bytes, items, logger)
 		go save(consumer, i, <-items, logger)
 	}
 }

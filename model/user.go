@@ -13,7 +13,6 @@ type ArticleActivity struct {
 }
 
 type ArticleUserActivity struct {
-	UserId  int64
 	Like    bool
 	Dislike bool
 }
@@ -23,15 +22,3 @@ type ArticleUser struct {
 	ArticleActivity
 	ArticleUserActivity
 }
-
-//type IRegisterUser interface {
-//	RegisterUser() (userToken string, err error)
-//}
-//
-//type IUpdateUser interface {
-//	UpdateUserFunc() (err error)
-//}
-//
-//type IArticleUser interface {
-//	GetArticleUser(userToken string, lastTime time.Time, logger logger.Logger) ([]ArticleUser, error)
-//}

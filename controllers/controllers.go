@@ -14,7 +14,7 @@ func prepareRequest(w http.ResponseWriter, r *http.Request) (userDbLogger logger
 	w.Header().Set("Content-Type", "application/json")
 	log, err := logger.UserDbLogger{DB: dbLogger.DB, UserIP: r.RemoteAddr}, r.ParseForm()
 	if err != nil {
-		userDbLogger.Log("ERROR", "PREPARE", err.Error())
+		log.Log("ERROR", "PREPARE", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 	}
 	return log, err

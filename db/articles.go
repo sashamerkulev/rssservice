@@ -20,14 +20,14 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 		tx.Rollback()
 		return
 	}
+	defer tx.Commit()
+	defer insertStmt.Close()
 	for i := 0; i < len(articles); i++ {
 		_, err = insertStmt.Exec(articles[i].SourceName, articles[i].Title, articles[i].Link, articles[i].Description, articles[i].PubDate, articles[i].Category, articles[i].PictureUrl)
 		if err != nil {
 			continue
 		}
 	}
-	defer insertStmt.Close()
-	defer tx.Commit()
 }
 
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
