@@ -30,7 +30,8 @@ create table userInfo(
 create table userDevices(
   UserId bigint not null,
   DeviceId mediumtext not null,
-  FirebaseId mediumtext not null
+  FirebaseId mediumtext not null,
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId)
 );
 create unique index index_userDevices on userDevices(UserId, DeviceId(100));
 
@@ -38,14 +39,17 @@ create table userDeviceToken(
   UserId bigint not null,
   DeviceId mediumtext not null,
   Timestamp datetime not null,
-  Token mediumtext not null
+  Token mediumtext not null,
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId)
 );
 create unique index index_userDeviceToken on userDeviceToken(UserId, DeviceId(100), Timestamp);
 
 create table userArticleLikes(
   UserId bigint not null,
   ArticleId   bigint not null,
-  Dislike bool not null
+  Dislike bool not null,
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
+  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
 create unique index index_userArticleLikes on userArticleLikes(UserId, ArticleId);
 
@@ -53,6 +57,8 @@ create table userArticleComments(
   UserId bigint not null,
   ArticleId   bigint not null,
   Timestamp datetime not null,
-  Comment  mediumtext not null
+  Comment  mediumtext not null,
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
+  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
 create unique index index_userArticleComments on userArticleComments(UserId, ArticleId, Timestamp);

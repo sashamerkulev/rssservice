@@ -2,8 +2,11 @@ package controllers
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
+	"github.com/sashamerkulev/logger"
 	"github.com/sashamerkulev/rssservice/domain"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -46,15 +49,50 @@ func articlesCommentsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := prepareRequest(w, r)
+	userDbLogger, err := prepareRequest(w, r)
 	if err != nil {
 		return
 	}
+	articleUserLike, err := prepareArticleActivity(userDbLogger, r)
+	if err != nil {
+		userDbLogger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = articleUserLike.Like()
+	if err != nil {
+		userDbLogger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := prepareRequest(w, r)
+	userDbLogger, err := prepareRequest(w, r)
 	if err != nil {
 		return
 	}
+	articleUserLike, err := prepareArticleActivity(userDbLogger, r)
+	if err != nil {
+		userDbLogger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	err = articleUserLike.Dislike()
+	if err != nil {
+		userDbLogger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+}
+
+func prepareArticleActivity(logger logger.Logger, r *http.Request) (domain.ArticleUserLike, error) {
+	vars := mux.Vars(r)
+	token := r.Header.Get("Authorization")
+	token = strings.Replace(token, "Bearer ", "", -1)
+	articleId := vars["articleId"]
+	id, err := strconv.ParseInt(articleId, 10, 64)
+	return domain.ArticleUserLike{ArticleId: id, UserToken: token, Logger: logger}, err
 }

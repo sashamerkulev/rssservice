@@ -16,6 +16,10 @@ func UserRegistrationError() error {
 	return Error("User registration is failed")
 }
 
+func ArticleNotFoundError() error {
+	return Error("Article not found")
+}
+
 func Error(text string) error {
 	return &errorString{text}
 }
