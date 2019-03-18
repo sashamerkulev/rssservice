@@ -24,7 +24,8 @@ create index index_log_severity on log(Severity(50));
 create table userInfo(
   UserId bigint auto_increment primary key,
   UserName mediumtext,
-  UserPhone mediumtext
+  UserPhone mediumtext,
+  UserPhoto blob
 );
 
 create table userDevices(
@@ -58,6 +59,7 @@ create table userArticleComments(
   ArticleId   bigint not null,
   Timestamp datetime not null,
   Comment  mediumtext not null,
+  Status int not null,
   FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
   FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );

@@ -4,7 +4,9 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/logger"
+	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/reader"
 	"time"
 )
 
@@ -25,6 +27,7 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 	for i := 0; i < len(articles); i++ {
 		_, err = insertStmt.Exec(articles[i].SourceName, articles[i].Title, articles[i].Link, articles[i].Description, articles[i].PubDate, articles[i].Category, articles[i].PictureUrl)
 		if err != nil {
+			logger.Log("ERROR", "ADDALL", err.Error())
 			continue
 		}
 	}
@@ -44,4 +47,104 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 		return
 	}
 	logger.Log("DEBUG", "WIPE", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
+}
+
+func GetArticleUser(UserId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
+	results = make([]model.ArticleUser, 0)
+	// TODO improve SQL statements and remove this 'for'
+	for i := 0; i < len(reader.Urls); i++ {
+		rows, err := DB.Query("select a.*, "+
+			" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
+			" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
+			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
+			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike "+
+			" 		from article a "+
+			" 		where a.sourcename = ? and a.PubDate >= ?"+
+			" order by a.PubDate desc "+
+			" limit 20",
+			UserId, UserId, reader.Urls[i].Name, lastTime)
+		if err != nil {
+			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+			continue
+		}
+		for rows.Next() {
+			article := model.ArticleUser{}
+			err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
+				&article.PubDate, &article.Category, &article.PictureUrl, &article.Dislikes, &article.Likes, &article.Dislike, &article.Like)
+			if err != nil {
+				logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+			}
+			results = append(results, article)
+		}
+	}
+	return results, nil
+}
+
+func LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
+	found, err := findUserArticle(userId, articleId, logger)
+	if err != nil {
+		return err
+	}
+	if found == -1 {
+		return addUserArticleLike(userId, articleId, false)
+	} else {
+		if found == 1 {
+			return deleteUserArticleLike(userId, articleId) // remove like
+		} else {
+			return updateUserArticleLike(userId, articleId, false) // dislike is change to like
+		}
+	}
+}
+
+func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
+	found, err := findUserArticle(userId, articleId, logger)
+	if err != nil {
+		return err
+	}
+	if found == -1 {
+		return addUserArticleLike(userId, articleId, true)
+	} else {
+		if found == 1 {
+			return updateUserArticleLike(userId, articleId, true) // like is change to dislike
+		} else {
+			return deleteUserArticleLike(userId, articleId) // remove dislike
+		}
+	}
+}
+
+func addUserArticleLike(userId int64, articleId int64, dislike bool) error {
+	_, err := DB.Exec("insert into userArticleLikes(userId, articleId, dislike) values(?,?,?)", userId, articleId, dislike)
+	return err
+}
+
+func deleteUserArticleLike(userId int64, articleId int64) error {
+	_, err := DB.Exec("delete from userArticleLikes where userId=? and articleId = ?", userId, articleId)
+	return err
+}
+
+func updateUserArticleLike(userId int64, articleId int64, dislike bool) error {
+	_, err := DB.Exec("update userArticleLikes set dislike = ? where userId=? and articleId = ?", dislike, userId, articleId)
+	return err
+}
+
+func findUserArticle(userId int64, articleId int64, logger logger.Logger) (int, error) {
+	rows, err := DB.Query("select dislike from userArticleLikes WHERE userId = ? and articleId = ?", userId, articleId)
+	if err != nil {
+		logger.Log("ERROR", "FINDUSERARTICLE", err.Error())
+		return -1, errors.ArticleNotFoundError()
+	}
+	defer rows.Close()
+	if rows.Next() {
+		var dislike bool
+		err = rows.Scan(&dislike)
+		if err != nil {
+			return -1, errors.ArticleNotFoundError()
+		}
+		if dislike { // already dislike (true)
+			return 0, nil
+		} else { // already like (false)
+			return 1, nil
+		}
+	}
+	return -1, nil
 }

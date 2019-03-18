@@ -4,15 +4,24 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sashamerkulev/logger"
+	"github.com/sashamerkulev/rssservice/db"
 	"net/http"
 	"strings"
 )
 
 var dbLogger logger.DbLogger
 
+func getAuthorizationToken(r *http.Request) int64 {
+	token := r.Header.Get("Authorization")
+	token = strings.Replace(token, "Bearer ", "", -1)
+	userId, _ := db.GetUserIdByToken(token)
+	return userId
+}
+
 func prepareRequest(w http.ResponseWriter, r *http.Request) (userDbLogger logger.UserDbLogger, err error) {
 	w.Header().Set("Content-Type", "application/json")
-	log, err := logger.UserDbLogger{DB: dbLogger.DB, UserIP: r.RemoteAddr}, r.ParseForm()
+	userId := getAuthorizationToken(r)
+	log, err := logger.UserDbLogger{DB: dbLogger.DB, UserIP: r.RemoteAddr, UserId: userId}, r.ParseForm()
 	if err != nil {
 		log.Log("ERROR", "PREPARE", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -50,6 +59,7 @@ func Init(_dbLogger logger.DbLogger) {
 	r.HandleFunc("/users", homeHandler).Methods("GET")
 	r.HandleFunc("/users/register", usersRegisterHandler).Methods("POST")
 	r.HandleFunc("/users/update", usersUpdateHandler).Methods("POST")
+	r.HandleFunc("/users/uploadPhoto", usersUploadPhotoHandler).Methods("POST")
 	err := http.ListenAndServe(":9000", r)
 	if err != nil {
 		dbLogger.Log("ERROR", "INIT", err.Error())

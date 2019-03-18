@@ -8,15 +8,11 @@ import (
 )
 
 type ArticleUser struct {
-	UserToken string
-	LastTime  time.Time
-	Logger    logger.Logger
+	UserId   int64
+	LastTime time.Time
+	Logger   logger.Logger
 }
 
 func (au ArticleUser) GetArticleUser() ([]model.ArticleUser, error) {
-	userId, err := db.GetUserIdByToken(au.UserToken, au.Logger)
-	if err != nil {
-		return make([]model.ArticleUser, 0), err
-	}
-	return db.GetArticleUser(userId, au.LastTime, au.Logger)
+	return db.GetArticleUser(au.UserId, au.LastTime, au.Logger)
 }

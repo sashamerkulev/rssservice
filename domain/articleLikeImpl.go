@@ -6,7 +6,7 @@ import (
 )
 
 type ArticleUserLike struct {
-	UserToken string
+	UserId    int64
 	ArticleId int64
 	Logger    logger.Logger
 }
@@ -20,9 +20,9 @@ func (aul ArticleUserLike) Dislike() error {
 }
 
 func (aul ArticleUserLike) likeOrDislike(action func(userId int64, articleId int64, logger logger.Logger) error) error {
-	userId, err := db.GetUserIdByToken(aul.UserToken, aul.Logger)
-	if err != nil {
-		return err
-	}
-	return action(userId, aul.ArticleId, aul.Logger)
+	return action(aul.UserId, aul.ArticleId, aul.Logger)
+}
+
+func (aul ArticleUserLike) Comment(comments string) error {
+	return nil
 }

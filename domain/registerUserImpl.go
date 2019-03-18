@@ -23,11 +23,11 @@ func (registerUser RegisterUser) RegisterUser() (user model.User, err error) {
 		if err != nil {
 			return model.User{}, errors.UserRegistrationError()
 		}
-		return model.User{UserToken: token, UserId: userId, Name: "", Phone: ""}, err
+		return model.User{UserId: userId, Name: "", Phone: ""}, err
 	} else {
 		jwtToken := jwt.New(jwt.SigningMethodHS256)
 		token, _ := jwtToken.SigningString()
 		userId, err := db.RegisterUser(registerUser.DeviceId, registerUser.FirebaseId, token, registerUser.Logger)
-		return model.User{UserToken: token, UserId: userId, Name: "", Phone: ""}, err
+		return model.User{UserId: userId, Name: "", Phone: ""}, err
 	}
 }

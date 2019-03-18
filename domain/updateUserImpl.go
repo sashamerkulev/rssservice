@@ -7,17 +7,13 @@ import (
 )
 
 type UpdateUser struct {
-	UserToken string
-	Name      string
-	Phone     string
-	Logger    logger.Logger
+	UserId int64
+	Name   string
+	Phone  string
+	Logger logger.Logger
 }
 
-func (updateUser UpdateUser) UpdateUser() (user model.User, err error) {
-	userId, err := db.GetUserIdByToken(updateUser.UserToken, updateUser.Logger)
-	if err != nil {
-		return model.User{}, err
-	}
-	err = db.UpdateUser(userId, updateUser.Name, updateUser.Phone, updateUser.Logger)
-	return model.User{UserToken: updateUser.UserToken, UserId: userId, Name: updateUser.Name, Phone: updateUser.Phone}, err
+func (uu UpdateUser) UpdateUser() (user model.User, err error) {
+	err = db.UpdateUser(uu.UserId, uu.Name, uu.Phone, uu.Logger)
+	return model.User{UserId: uu.UserId, Name: uu.Name, Phone: uu.Phone}, err
 }

@@ -12,6 +12,10 @@ func UserUpdateError() error {
 	return Error("User updating is failed")
 }
 
+func UserPhotoUploadError() error {
+	return Error("User photo updating is failed")
+}
+
 func UserRegistrationError() error {
 	return Error("User registration is failed")
 }
