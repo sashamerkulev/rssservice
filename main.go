@@ -4,6 +4,7 @@ import (
 	"github.com/sashamerkulev/logger"
 	"github.com/sashamerkulev/rssservice/controllers"
 	"github.com/sashamerkulev/rssservice/db"
+	"github.com/sashamerkulev/rssservice/fcm"
 	"github.com/sashamerkulev/rssservice/reader"
 	"time"
 )
@@ -12,6 +13,7 @@ func read(dbLogger logger.DbLogger) {
 	ticker := time.NewTicker(time.Minute * 15)
 	for _ = range ticker.C {
 		reader.Do(db.AddArticles, dbLogger)
+		fcm.SendNotificationNewArticlesMessage()
 	}
 }
 

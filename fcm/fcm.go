@@ -1,0 +1,6 @@
+package fcm
+
+
+func SendNotificationNewArticlesMessage() {
+
+}
