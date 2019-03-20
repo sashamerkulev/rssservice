@@ -55,6 +55,7 @@ create table userArticleLikes(
 create unique index index_userArticleLikes on userArticleLikes(UserId, ArticleId);
 
 create table userArticleComments(
+  CommentId  bigint auto_increment primary key,
   UserId bigint not null,
   ArticleId   bigint not null,
   Timestamp datetime not null,
@@ -64,3 +65,12 @@ create table userArticleComments(
   FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
 create unique index index_userArticleComments on userArticleComments(UserId, ArticleId, Timestamp);
+
+create table userCommentLikes(
+  UserId bigint not null,
+  CommentId   bigint not null,
+  Dislike bool not null,
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
+  FOREIGN KEY (CommentId) REFERENCES userarticlecomments(CommentId)
+);
+create unique index index_userCommentLikes on userCommentLikes(UserId, CommentId);

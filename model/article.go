@@ -1,7 +1,7 @@
 package model
 
 import (
-	"github.com/sashamerkulev/logger"
+	"github.com/sashamerkulev/rssservice/logger"
 	"time"
 )
 

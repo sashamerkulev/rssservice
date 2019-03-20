@@ -2,7 +2,7 @@ package reader
 
 import (
 	"encoding/xml"
-	"github.com/sashamerkulev/logger"
+	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"io/ioutil"
 	"net/http"

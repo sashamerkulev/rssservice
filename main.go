@@ -1,41 +1,45 @@
 package main
 
 import (
-	"github.com/sashamerkulev/logger"
 	"github.com/sashamerkulev/rssservice/controllers"
-	"github.com/sashamerkulev/rssservice/db"
+	"github.com/sashamerkulev/rssservice/domain"
 	"github.com/sashamerkulev/rssservice/fcm"
+	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/mysql/data"
 	"github.com/sashamerkulev/rssservice/reader"
 	"time"
 )
 
-func read(dbLogger logger.DbLogger) {
+var repository domain.MainRepository
+
+func read(logger logger.Logger) {
 	ticker := time.NewTicker(time.Minute * 15)
 	for _ = range ticker.C {
-		reader.Do(db.AddArticles, dbLogger)
+		reader.Do(data.AddArticles, logger)
 		fcm.SendNotificationNewArticlesMessage()
 	}
 }
 
-func wipe(dbLogger logger.DbLogger) {
+func wipe(logger logger.Logger) {
 	ticker := time.NewTicker(time.Hour * 12)
 	for _ = range ticker.C {
 		wipeTime := time.Now()
 		wipeTime = wipeTime.Add(-12 * time.Hour)
-		db.WipeOldArticles(wipeTime, dbLogger)
+		data.WipeOldArticles(wipeTime, logger)
 	}
 }
 
 func main() {
-	err := db.DBOpen()
+	repository = data.MainRepositoryImpl{}
+	err := repository.Open()
 	if err != nil {
 		var log = logger.ConsoleLogger{}
 		log.Log("ERROR", "MAIN", "Can't open DB. The service will be closed.")
 		return
 	}
-	defer db.DBClose()
-	log := logger.DbLogger{DB: db.DB}
+	defer repository.Close()
+	var log = repository.GetLogger(-1, "")
 	go read(log)
 	go wipe(log)
-	controllers.Init(log)
+	controllers.Init(repository)
 }

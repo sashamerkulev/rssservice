@@ -1,10 +1,10 @@
-package db
+package data
 
 import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/sashamerkulev/logger"
 	"github.com/sashamerkulev/rssservice/errors"
+	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/reader"
 	"time"
@@ -49,7 +49,7 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	logger.Log("DEBUG", "WIPE", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
 }
 
-func GetArticleUser(UserId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
+func GetUserArticles(UserId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
 	results = make([]model.ArticleUser, 0)
 	// TODO improve SQL statements and remove this 'for'
 	for i := 0; i < len(reader.Urls); i++ {
@@ -80,71 +80,38 @@ func GetArticleUser(UserId int64, lastTime time.Time, logger logger.Logger) (res
 	return results, nil
 }
 
-func LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	found, err := findUserArticle(userId, articleId, logger)
-	if err != nil {
-		return err
-	}
-	if found == -1 {
-		return addUserArticleLike(userId, articleId, false)
-	} else {
-		if found == 1 {
-			return deleteUserArticleLike(userId, articleId) // remove like
-		} else {
-			return updateUserArticleLike(userId, articleId, false) // dislike is change to like
-		}
-	}
-}
-
-func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	found, err := findUserArticle(userId, articleId, logger)
-	if err != nil {
-		return err
-	}
-	if found == -1 {
-		return addUserArticleLike(userId, articleId, true)
-	} else {
-		if found == 1 {
-			return updateUserArticleLike(userId, articleId, true) // like is change to dislike
-		} else {
-			return deleteUserArticleLike(userId, articleId) // remove dislike
-		}
-	}
-}
-
-func addUserArticleLike(userId int64, articleId int64, dislike bool) error {
-	_, err := DB.Exec("insert into userArticleLikes(userId, articleId, dislike) values(?,?,?)", userId, articleId, dislike)
-	return err
-}
-
-func deleteUserArticleLike(userId int64, articleId int64) error {
-	_, err := DB.Exec("delete from userArticleLikes where userId=? and articleId = ?", userId, articleId)
-	return err
-}
-
-func updateUserArticleLike(userId int64, articleId int64, dislike bool) error {
-	_, err := DB.Exec("update userArticleLikes set dislike = ? where userId=? and articleId = ?", dislike, userId, articleId)
-	return err
-}
-
-func findUserArticle(userId int64, articleId int64, logger logger.Logger) (int, error) {
+func FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger) (bool, error) {
 	rows, err := DB.Query("select dislike from userArticleLikes WHERE userId = ? and articleId = ?", userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "FINDUSERARTICLE", err.Error())
-		return -1, errors.ArticleNotFoundError()
+		return false, errors.ArticleNotFoundError()
 	}
 	defer rows.Close()
 	if rows.Next() {
 		var dislike bool
 		err = rows.Scan(&dislike)
 		if err != nil {
-			return -1, errors.ArticleNotFoundError()
+			return false, errors.ArticleNotFoundError()
 		}
-		if dislike { // already dislike (true)
-			return 0, nil
-		} else { // already like (false)
-			return 1, nil
-		}
+		return dislike, nil
 	}
-	return -1, nil
+	return false, errors.ArticleNotFoundError()
+}
+
+func RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error {
+	_, err := DB.Exec("delete from userArticleLikes where userId=? and articleId = ?", userId, articleId)
+	return err
+}
+
+func SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error {
+	_, err := DB.Exec("update userArticleLikes set dislike = ? where userId=? and articleId = ?", dislike, userId, articleId)
+	return err
+}
+
+func LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
+	return SetUserArticleDislikeTo(userId, articleId, false, logger)
+}
+
+func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
+	return SetUserArticleDislikeTo(userId, articleId, true, logger)
 }

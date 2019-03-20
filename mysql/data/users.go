@@ -1,8 +1,8 @@
-package db
+package data
 
 import (
-	"github.com/sashamerkulev/logger"
 	"github.com/sashamerkulev/rssservice/errors"
+	"github.com/sashamerkulev/rssservice/logger"
 	"time"
 )
 
