@@ -7,6 +7,7 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/reader"
+	"strings"
 	"time"
 )
 
@@ -72,7 +73,10 @@ func GetUserArticles(UserId int64, lastTime time.Time, logger logger.Logger) (re
 			err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
 				&article.PubDate, &article.Category, &article.PictureUrl, &article.Dislikes, &article.Likes, &article.Dislike, &article.Like)
 			if err != nil {
-				logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+				isDuplicate := strings.Contains(err.Error(), "Error 1062")
+				if !isDuplicate {
+					logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+				}
 			}
 			results = append(results, article)
 		}

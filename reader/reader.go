@@ -9,40 +9,41 @@ import (
 	"time"
 )
 
-type links struct {
+type Link struct {
 	Link   string
 	Layout string
 	Name   string
+	Title  string
 }
 
-var Urls = []links{
-	{Link: "http://lenta.ru/rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "lenta"},
-	{Link: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/mainnews.rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "rbc"},
-	{Link: "http://worldoftanks.ru/ru/rss/news/", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "wot"},
-	{Link: "https://topwar.ru/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "topwar"},
-	{Link: "http://www.interfax.ru/rss.asp", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "interfax"}, // Fri, 8 Mar 2019 13:58:00 +0300
-	{Link: "http://www.vesti.ru/vesti.rss", Layout: time.RFC1123Z, Name: "vesti"},
-	{Link: "http://russian.rt.com/rss/", Layout: time.RFC1123Z, Name: "rt"},
-	{Link: "http://www.planetanovosti.com/news/rss/", Layout: time.RFC1123, Name: "planetanovosti"},
-	{Link: "https://news.rambler.ru/rss/world/", Layout: time.RFC1123Z, Name: "rambler"},
-	{Link: "http://rss.newsru.com/world/", Layout: time.RFC1123Z, Name: "newsru"},
-	{Link: "http://mixednews.ru/feed/", Layout: time.RFC1123Z, Name: "mixednews"},
-	{Link: "http://rg.ru/xml/index.xml", Layout: "_2 Jan 2006 15:04:05 MST", Name: "rg"}, //8 Mar 2019 12:40:17 GMT
-	{Link: "http://www.ng.ru/rss/", Layout: time.RFC1123Z, Name: "ng"},
-	{Link: "http://www.kp.ru/rss/allsections.xml", Layout: time.RFC1123Z, Name: "kp"},
-	{Link: "http://www.km.ru/rss/main", Layout: time.RFC1123Z, Name: "km"},
-	{Link: "http://feeds.feedburner.com/aftershock/news", Layout: time.RFC1123Z, Name: "aftershock"},
-	{Link: "http://otredakcii.odnako.org/rss/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "odnako"},
-	{Link: "http://www.aif.ru/rss/all.php", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "aif"},
-	{Link: "http://feeds.bbci.co.uk/russian/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "bbcrussian"},
-	{Link: "http://tass.ru/rss/v2.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "tass"},
-	{Link: "http://www.nkj.ru/rss/", Layout: time.RFC1123Z, Name: "nkj"},
-	{Link: "http://www.mk.ru/rss/index.xml", Layout: time.RFC1123Z, Name: "mk"},
-	{Link: "http://www.cnews.ru/inc/rss/news.xml", Layout: time.RFC1123Z, Name: "cnews"},
-	{Link: "https://news.mail.ru/rss/91/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "mailnews"}, //Fri, 8 Mar 2019 15:49:34 +0300
-	{Link: "http://www.sport-express.ru/controllers/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress"},
-	{Link: "http://dp.ru/rss", Layout: time.RFC1123Z, Name: "dp"},
-	{Link: "https://sdelanounas.ru/index/rss/", Layout: time.RFC1123Z, Name: "sdelanounas"},
+var Urls = []Link{
+	{Link: "http://lenta.ru/rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "lenta", Title: "Лента"},
+	{Link: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/mainnews.rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "rbc", Title: "РБК"},
+	{Link: "http://worldoftanks.ru/ru/rss/news/", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "wot", Title: "World of Tanks"},
+	{Link: "https://topwar.ru/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "topwar", Title: "Topwar"},
+	{Link: "http://www.interfax.ru/rss.asp", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "interfax", Title: "Интерфакс"}, // Fri, 8 Mar 2019 13:58:00 +0300
+	{Link: "http://www.vesti.ru/vesti.rss", Layout: time.RFC1123Z, Name: "vesti", Title: "Вести"},
+	{Link: "http://russian.rt.com/rss/", Layout: time.RFC1123Z, Name: "rt", Title: "RT"},
+	{Link: "http://www.planetanovosti.com/news/rss/", Layout: time.RFC1123, Name: "planetanovosti", Title: "Планета Новости"},
+	{Link: "https://news.rambler.ru/rss/world/", Layout: time.RFC1123Z, Name: "rambler", Title: "Rambler.news"},
+	{Link: "http://rss.newsru.com/world/", Layout: time.RFC1123Z, Name: "newsru", Title: "News.ru"},
+	{Link: "http://mixednews.ru/feed/", Layout: time.RFC1123Z, Name: "mixednews", Title: "MixedNews"},
+	{Link: "http://rg.ru/xml/index.xml", Layout: "_2 Jan 2006 15:04:05 MST", Name: "rg", Title: "Российская газета"}, //8 Mar 2019 12:40:17 GMT
+	{Link: "http://www.ng.ru/rss/", Layout: time.RFC1123Z, Name: "ng", Title: "Независимая газета"},
+	{Link: "http://www.kp.ru/rss/allsections.xml", Layout: time.RFC1123Z, Name: "kp", Title: "Комсомольская правда"},
+	{Link: "http://www.km.ru/rss/main", Layout: time.RFC1123Z, Name: "km", Title: "Кирил и Мефодий"},
+	{Link: "http://feeds.feedburner.com/aftershock/news", Layout: time.RFC1123Z, Name: "aftershock", Title: "Aftershock"},
+	{Link: "http://otredakcii.odnako.org/rss/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "odnako", Title: "Однако"},
+	{Link: "http://www.aif.ru/rss/all.php", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "aif", Title: "Аргументы и факты"},
+	{Link: "http://feeds.bbci.co.uk/russian/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "bbcrussian", Title: "BBC Russian"},
+	{Link: "http://tass.ru/rss/v2.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "tass", Title: "ТАСС"},
+	{Link: "http://www.nkj.ru/rss/", Layout: time.RFC1123Z, Name: "nkj", Title: "Наука и Жизнь"},
+	{Link: "http://www.mk.ru/rss/index.xml", Layout: time.RFC1123Z, Name: "mk", Title: "Московский комсомолец"},
+	{Link: "http://www.cnews.ru/inc/rss/news.xml", Layout: time.RFC1123Z, Name: "cnews", Title: "CNews"},
+	{Link: "https://news.mail.ru/rss/91/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "mailnews", Title: "Mail.news"}, //Fri, 8 Mar 2019 15:49:34 +0300
+	{Link: "http://www.sport-express.ru/controllers/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress", Title: "Спорт-Экспресс"},
+	{Link: "http://dp.ru/rss", Layout: time.RFC1123Z, Name: "dp", Title: "Деловой Петербург"},
+	{Link: "https://sdelanounas.ru/index/rss/", Layout: time.RFC1123Z, Name: "sdelanounas", Title: "Сделано у нас"},
 }
 
 type rss2 struct {

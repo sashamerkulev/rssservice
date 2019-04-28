@@ -4,6 +4,7 @@ type User struct {
 	UserId int64
 	Name   string
 	Phone  string
+	Token  string
 }
 
 type ArticleActivity struct {

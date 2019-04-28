@@ -21,18 +21,6 @@ func finishUserResponse(w http.ResponseWriter, user model.User, err error, logge
 	json.NewEncoder(w).Encode(user)
 }
 
-func usersRegisterHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
-		return
-	}
-	deviceId := r.Form.Get("deviceId")
-	firebaseId := r.Form.Get("firebaseId")
-	var ru = domain.UserRegister{DeviceId: deviceId, FirebaseId: firebaseId, Logger: logger, Repository: mysql.UserRegisterRepositoryImpl{}}
-	user, err := ru.RegisterUser()
-	finishUserResponse(w, user, err, logger)
-}
-
 func usersUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	logger, err := prepareRequest(w, r)
 	if err != nil {

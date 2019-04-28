@@ -5,6 +5,7 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/reader"
 	"time"
 )
 
@@ -42,6 +43,10 @@ func (MainRepositoryImpl) GetLogger(userId int64, userIP string) logger.Logger {
 
 func (MainRepositoryImpl) GetUserIdByToken(token string) (int64, error) {
 	return GetUserIdByToken(token)
+}
+
+func (MainRepositoryImpl) GetSources() ([]reader.Link, error) {
+	return reader.Urls, nil
 }
 
 func (ul UserDbLogger) Log(severity string, tag string, message string) {

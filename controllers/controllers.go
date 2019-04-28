@@ -13,7 +13,7 @@ var repository domain.MainRepository
 
 func getAuthorizationToken(r *http.Request) int64 {
 	token := r.Header.Get("Authorization")
-	token = strings.Replace(token, "Bearer ", "", -1)
+	token = strings.Replace(strings.ToLower(token), "bearer ", "", -1)
 	userId, _ := repository.GetUserIdByToken(token)
 	return userId
 }
@@ -50,19 +50,20 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 func Init(_repository domain.MainRepository) {
 	repository = _repository
 	r := mux.NewRouter()
-	r.HandleFunc("/", homeHandler).Methods("GET")
+	r.HandleFunc("/", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/articles", articlesHandler).Methods("GET")
 	r.HandleFunc("/articles/favorites", favoriteArticlesHandler).Methods("GET")
-	r.HandleFunc("/articles/{articleId}/like", articlesLikeHandler).Methods("POST")
-	r.HandleFunc("/articles/{articleId}/dislike", articlesDislikeHandler).Methods("POST")
-	r.HandleFunc("/articles/{articleId}/comments", articlesCommentsHandler).Methods("POST")
-	r.HandleFunc("/articles/{articleId}/comments/{commentId}/like", articlesCommentsLikeHandler).Methods("POST")
-	r.HandleFunc("/articles/{articleId}/comments/{commentId}/dislike", articlesCommentsDislikeHandler).Methods("POST")
-	r.HandleFunc("/users", homeHandler).Methods("GET")
+	r.HandleFunc("/articles/{articleId}/like", articlesLikeHandler).Methods("PUT")
+	r.HandleFunc("/articles/{articleId}/dislike", articlesDislikeHandler).Methods("PUT")
+	r.HandleFunc("/articles/{articleId}/comments", articlesCommentsHandler).Methods("GET")
+	r.HandleFunc("/articles/{articleId}/comments/{commentId}/like", articlesCommentsLikeHandler).Methods("PUT")
+	r.HandleFunc("/articles/{articleId}/comments/{commentId}/dislike", articlesCommentsDislikeHandler).Methods("PUT")
+	r.HandleFunc("/setup/register", setupRegisterHandler).Methods("POST")
+	r.HandleFunc("/setup/sources", setupSourcesHandler).Methods("GET")
+	r.HandleFunc("/users", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/users/info", userInfoHandler).Methods("GET")
-	r.HandleFunc("/users/register", usersRegisterHandler).Methods("POST")
-	r.HandleFunc("/users/update", usersUpdateHandler).Methods("POST")
-	r.HandleFunc("/users/uploadPhoto", usersUploadPhotoHandler).Methods("POST")
+	r.HandleFunc("/users/update", usersUpdateHandler).Methods("PUT")
+	r.HandleFunc("/users/uploadPhoto", usersUploadPhotoHandler).Methods("PUT")
 	err := http.ListenAndServe(":9000", r)
 	if err != nil {
 		repository.GetLogger(-1, "").Log("ERROR", "INIT", err.Error())
