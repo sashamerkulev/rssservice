@@ -7,6 +7,7 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/reader"
+	"sort"
 	"strings"
 	"time"
 )
@@ -28,7 +29,10 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 	for i := 0; i < len(articles); i++ {
 		_, err = insertStmt.Exec(articles[i].SourceName, articles[i].Title, articles[i].Link, articles[i].Description, articles[i].PubDate, articles[i].Category, articles[i].PictureUrl)
 		if err != nil {
-			logger.Log("ERROR", "ADDALL", err.Error())
+			isDuplicate := strings.Contains(err.Error(), "Error 1062")
+			if !isDuplicate {
+				logger.Log("ERROR", "ADDARTICLES", err.Error())
+			}
 			continue
 		}
 	}
@@ -50,20 +54,22 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	logger.Log("DEBUG", "WIPE", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
 }
 
-func GetUserArticles(UserId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
+func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
 	results = make([]model.ArticleUser, 0)
 	// TODO improve SQL statements and remove this 'for'
 	for i := 0; i < len(reader.Urls); i++ {
 		rows, err := DB.Query("select a.*, "+
 			" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
 			" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
+			" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
 			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
-			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike "+
+			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
+			" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
 			" 		from article a "+
 			" 		where a.sourcename = ? and a.PubDate >= ?"+
 			" order by a.PubDate desc "+
 			" limit 20",
-			UserId, UserId, reader.Urls[i].Name, lastTime)
+			userId, userId, userId, reader.Urls[i].Name, lastTime)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 			continue
@@ -71,16 +77,20 @@ func GetUserArticles(UserId int64, lastTime time.Time, logger logger.Logger) (re
 		for rows.Next() {
 			article := model.ArticleUser{}
 			err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
-				&article.PubDate, &article.Category, &article.PictureUrl, &article.Dislikes, &article.Likes, &article.Dislike, &article.Like)
+				&article.PubDate, &article.Category, &article.PictureUrl,
+				&article.Dislikes, &article.Likes, &article.Comments,
+				&article.Dislike, &article.Like, &article.Comment)
 			if err != nil {
-				isDuplicate := strings.Contains(err.Error(), "Error 1062")
-				if !isDuplicate {
-					logger.Log("ERROR", "GETARTICLEUSER", err.Error())
-				}
+				logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 			}
 			results = append(results, article)
 		}
 	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].PubDate.After(results[j].PubDate)
+	})
+
 	return results, nil
 }
 
@@ -113,9 +123,41 @@ func SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger
 }
 
 func LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	return SetUserArticleDislikeTo(userId, articleId, false, logger)
+	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike) values(?,?,?)", userId, articleId, false)
+	return err
 }
 
 func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	return SetUserArticleDislikeTo(userId, articleId, true, logger)
+	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike) values(?,?,?)", userId, articleId, true)
+	return err
+}
+
+func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
+	rows, err := DB.Query("select a.*, "+
+		" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
+		" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
+		" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
+		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
+		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
+		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
+		" 		from article a "+
+		" 		where a.articleId = ?"+
+		" order by a.PubDate desc ",
+		userId, userId, userId, articleId)
+	if err != nil {
+		logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+		return model.ArticleUser{}, nil
+	}
+	if rows.Next() {
+		article := model.ArticleUser{}
+		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
+			&article.PubDate, &article.Category, &article.PictureUrl,
+			&article.Dislikes, &article.Likes, &article.Comments,
+			&article.Dislike, &article.Like, &article.Comment)
+		if err != nil {
+			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+		}
+		return article, nil
+	}
+	return model.ArticleUser{}, nil
 }

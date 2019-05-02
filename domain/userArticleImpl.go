@@ -2,6 +2,7 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/model"
 )
 
 type UserArticleRepository interface {
@@ -10,6 +11,7 @@ type UserArticleRepository interface {
 	FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger) (bool, error)
 	SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error
 	RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error
+	GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error)
 }
 
 type UserArticle struct {
@@ -19,34 +21,42 @@ type UserArticle struct {
 	Repository UserArticleRepository
 }
 
-func (ua UserArticle) Like() error {
+func (ua UserArticle) Like() (model.ArticleUser, error) {
 	// if no likes or dislike - add like
 	// if dislike - change to like
 	// if like - remove like
 	dislike, err := ua.Repository.FindUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
 	if err == nil {
 		if dislike {
-			return ua.Repository.SetUserArticleDislikeTo(ua.UserId, ua.ArticleId, false, ua.Logger)
+			err = ua.Repository.SetUserArticleDislikeTo(ua.UserId, ua.ArticleId, false, ua.Logger)
 		} else {
-			return ua.Repository.RemoveUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
+			err = ua.Repository.RemoveUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
 		}
 	} else {
-		return ua.Repository.LikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
+		err = ua.Repository.LikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
 	}
+	if err != nil {
+		return model.ArticleUser{}, err
+	}
+	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }
 
-func (ua UserArticle) Dislike() error {
+func (ua UserArticle) Dislike() (model.ArticleUser, error) {
 	// if no likes or dislike - add dislike
 	// if dislike - remove dislike
 	// if like - change to dislike
 	dislike, err := ua.Repository.FindUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
 	if err == nil {
 		if dislike {
-			return ua.Repository.RemoveUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
+			err = ua.Repository.RemoveUserArticleDislike(ua.UserId, ua.ArticleId, ua.Logger)
 		} else {
-			return ua.Repository.SetUserArticleDislikeTo(ua.UserId, ua.ArticleId, true, ua.Logger)
+			err = ua.Repository.SetUserArticleDislikeTo(ua.UserId, ua.ArticleId, true, ua.Logger)
 		}
 	} else {
-		return ua.Repository.DislikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
+		err = ua.Repository.DislikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
 	}
+	if err != nil {
+		return model.ArticleUser{}, err
+	}
+	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }

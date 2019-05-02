@@ -2,6 +2,7 @@ package mysql
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/mysql/data"
 )
 
@@ -26,4 +27,8 @@ func (UserArticleRepositoryImpl) SetUserArticleDislikeTo(userId int64, articleId
 
 func (UserArticleRepositoryImpl) RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error {
 	return data.RemoveUserArticleDislike(userId, articleId, logger)
+}
+
+func (UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
+	return data.GetUserArticle(userId, articleId, logger)
 }

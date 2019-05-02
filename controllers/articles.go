@@ -16,15 +16,19 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	val := r.Form.Get("datetime")
+	val := r.Form.Get("lastArticleReadDate")
+	loc, _ := time.LoadLocation("UTC")
 	var datetime time.Time
 	if val == "" {
-		loc, _ := time.LoadLocation("UTC")
 		datetime = time.Date(2019, 1, 1, 0, 0, 0, 0, loc)
 	} else {
-		datetime, _ = time.Parse("2006-01-02 15:04:05", val)
+		//2019-05-03T16:54:07
+		datetime, err = time.Parse("2006-01-02T15:04:05", val)
+		if err != nil {
+			logger.Log("ERROR", "ARTICLES", err.Error())
+		}
+		datetime = datetime.Add(time.Duration(-3) * time.Hour) // TODO
 	}
-	logger.Log("DEBUG", "ARTICLES", r.RequestURI)
 	au := domain.UserArticles{
 		LastTime:   datetime,
 		Logger:     logger,
@@ -38,6 +42,7 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(articles)
+	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+val+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
 }
 
 func favoriteArticlesHandler(w http.ResponseWriter, r *http.Request) {
@@ -71,13 +76,14 @@ func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = articleUser.Like()
+	article, err := articleUser.Like()
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(article)
 }
 
 func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,13 +97,14 @@ func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	err = articleUser.Dislike()
+	article, err := articleUser.Dislike()
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(article)
 }
 
 func prepareArticleActivity(logger logger.Logger, r *http.Request) (domain.UserArticle, error) {

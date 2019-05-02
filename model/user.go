@@ -10,11 +10,13 @@ type User struct {
 type ArticleActivity struct {
 	Likes    int64
 	Dislikes int64
+	Comments int64
 }
 
 type ArticleUserActivity struct {
-	Like    bool
-	Dislike bool
+	Like    int
+	Dislike int
+	Comment int
 }
 
 type ArticleUser struct {
