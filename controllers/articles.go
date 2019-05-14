@@ -107,6 +107,27 @@ func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(article)
 }
 
+func articleHandler(w http.ResponseWriter, r *http.Request) {
+	logger, err := prepareRequest(w, r)
+	if err != nil {
+		return
+	}
+	articleUser, err := prepareArticleActivity(logger, r)
+	if err != nil {
+		logger.Log("ERROR", "articleLikeHandler", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	article, err := articleUser.GetUserArticle()
+	if err != nil {
+		logger.Log("ERROR", "articleLikeHandler", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(article)
+}
+
 func prepareArticleActivity(logger logger.Logger, r *http.Request) (domain.UserArticle, error) {
 	vars := mux.Vars(r)
 	articleId := vars["articleId"]

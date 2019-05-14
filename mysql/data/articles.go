@@ -40,7 +40,7 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	result, err := DB.Exec("DELETE FROM Article WHERE "+
-		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
+		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 LEFT JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId LEFT JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
 		"AND PubDate <= ?", wipeTime)
 	if err != nil {
 		logger.Log("ERROR", "WIPE", err.Error())

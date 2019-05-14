@@ -60,3 +60,7 @@ func (ua UserArticle) Dislike() (model.ArticleUser, error) {
 	}
 	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }
+
+func (ua UserArticle) GetUserArticle() (model.ArticleUser, error) {
+	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
+}
