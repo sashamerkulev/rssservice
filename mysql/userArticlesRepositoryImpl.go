@@ -15,5 +15,5 @@ func (UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time.Ti
 }
 
 func (UserArticlesRepositoryImpl) GetUserFavoriteArticles(userId int64, logger logger.Logger) ([]model.ArticleUser, error) {
-	return make([]model.ArticleUser, 0), nil
+	return data.GetUserActivityArticles(userId, logger)
 }

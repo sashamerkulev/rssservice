@@ -45,12 +45,12 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+val+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
 }
 
-func favoriteArticlesHandler(w http.ResponseWriter, r *http.Request) {
+func usersActivityArticlesHandler(w http.ResponseWriter, r *http.Request) {
 	logger, err := prepareRequest(w, r)
 	if err != nil {
 		return
 	}
-	logger.Log("DEBUG", "FAVORITEARTICLESHANDLER", r.RequestURI)
+	logger.Log("DEBUG", "USERSACTIVITYARTICLESHANDLER", r.RequestURI)
 	au := domain.UserArticles{
 		Logger:     logger,
 		UserId:     getAuthorizationToken(r),

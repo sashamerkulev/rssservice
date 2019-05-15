@@ -52,7 +52,7 @@ func Init(_repository domain.MainRepository) {
 	r := mux.NewRouter()
 	r.HandleFunc("/", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/articles", articlesHandler).Methods("POST")
-	r.HandleFunc("/articles/favorites", favoriteArticlesHandler).Methods("GET")
+	r.HandleFunc("/articles/users", usersActivityArticlesHandler).Methods("GET")
 	r.HandleFunc("/articles/{articleId}", articleHandler).Methods("GET")
 	r.HandleFunc("/articles/{articleId}/like", articlesLikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/{articleId}/dislike", articlesDislikeHandler).Methods("PUT")

@@ -40,7 +40,9 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	result, err := DB.Exec("DELETE FROM Article WHERE "+
-		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 LEFT JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId LEFT JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
+		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId " +
+		" UNION " +
+		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
 		"AND PubDate <= ?", wipeTime)
 	if err != nil {
 		logger.Log("ERROR", "WIPE", err.Error())
@@ -86,6 +88,45 @@ func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (re
 			}
 			results = append(results, article)
 		}
+	}
+
+	sort.Slice(results, func(i, j int) bool {
+		return results[i].PubDate.After(results[j].PubDate)
+	})
+
+	return results, nil
+}
+
+func GetUserActivityArticles(userId int64, logger logger.Logger) (results []model.ArticleUser, err error) {
+	results = make([]model.ArticleUser, 0)
+	// TODO improve SQL statements and remove this 'for'
+	rows, err := DB.Query("select a.*, "+
+		" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
+		" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
+		" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
+		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
+		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
+		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
+		" 		from article a "+
+		" 		where a.articleId IN (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId AND ual.UserId = ? " +
+		" UNION " +
+	    " SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId AND uac.UserId = ?) " +
+		" order by a.PubDate desc ",
+		userId, userId, userId, userId, userId)
+	if err != nil {
+		logger.Log("ERROR", "GETUSERACTIVITYARTICLES", err.Error())
+		return results, err
+	}
+	for rows.Next() {
+		article := model.ArticleUser{}
+		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
+			&article.PubDate, &article.Category, &article.PictureUrl,
+			&article.Dislikes, &article.Likes, &article.Comments,
+			&article.Dislike, &article.Like, &article.Comment)
+		if err != nil {
+			logger.Log("ERROR", "GETUSERACTIVITYARTICLES", err.Error())
+		}
+		results = append(results, article)
 	}
 
 	sort.Slice(results, func(i, j int) bool {
