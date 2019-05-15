@@ -56,6 +56,7 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 
 func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (results []model.ArticleUser, err error) {
 	results = make([]model.ArticleUser, 0)
+	currentTime := time.Now()
 	// TODO improve SQL statements and remove this 'for'
 	for i := 0; i < len(reader.Urls); i++ {
 		rows, err := DB.Query("select a.*, "+
@@ -66,10 +67,10 @@ func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (re
 			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
 			" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
 			" 		from article a "+
-			" 		where a.sourcename = ? and a.PubDate >= ?"+
+			" 		where a.sourcename = ? and a.PubDate >= ? and a.PubDate < ?"+
 			" order by a.PubDate desc "+
 			" limit 20",
-			userId, userId, userId, reader.Urls[i].Name, lastTime)
+			userId, userId, userId, reader.Urls[i].Name, lastTime, currentTime)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 			continue
