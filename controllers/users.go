@@ -7,7 +7,6 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/mysql"
-	"io/ioutil"
 	"net/http"
 )
 
@@ -52,31 +51,44 @@ func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
-	file, handler, err := r.FormFile("userPhoto")
-	if err != nil {
-		logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
+	form := r.MultipartForm
+	files := form.File["File"]
+	for _, file := range files {
+		if file.Size < 0 {
+			return
+		}
+		logger.Log("DEBUG", "USERSUPLOADPHOTOHANDLER", "Uploading File: "+file.Filename+" File Size: "+fmt.Sprint(file.Size))
+		ffile, err := file.Open()
+		if err != nil {
+			logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		bytes := make([]byte, file.Size)
+		n, err := ffile.Read(bytes)
+		if err != nil {
+			logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		if int64(n) < file.Size {
+			logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", "can't read file")
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
+		var upu = domain.UserPhotoUpload{Logger: logger, UserId: getAuthorizationToken(r), Photo: bytes, Repository: mysql.UserPhotoUploadRepositoryImpl{}}
+		err = upu.UploadUserPhoto()
+		if err != nil {
+			logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
+			w.WriteHeader(http.StatusBadRequest)
+			return
+		}
 	}
-	defer file.Close()
-	logger.Log("DEBUG", "USERSUPLOADPHOTOHANDLER", "Uploaded File: "+handler.Filename)
-	logger.Log("DEBUG", "USERSUPLOADPHOTOHANDLER", "File Size: "+fmt.Sprint(handler.Size))
 	//logger.Log("DEBUG", "USERSUPLOADPHOTOHANDLER", "MIME Header: "+handler.Header)
-
-	fileBytes, err := ioutil.ReadAll(file)
-	if err != nil {
-		logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	var upu = domain.UserPhotoUpload{Logger: logger, UserId: getAuthorizationToken(r), Photo: fileBytes, Repository: mysql.UserPhotoUploadRepositoryImpl{}}
-	err = upu.UploadUserPhoto()
-	if err != nil {
-		logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+	//if err != nil {
+	//	logger.Log("ERROR", "USERSUPLOADPHOTOHANDLER", err.Error())
+	//	w.WriteHeader(http.StatusBadRequest)
+	//	return
+	//}
 	w.WriteHeader(http.StatusOK)
 }
