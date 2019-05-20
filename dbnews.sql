@@ -25,7 +25,7 @@ create table userInfo(
   UserId bigint auto_increment primary key,
   UserName mediumtext,
   UserPhone mediumtext,
-  UserPhoto blob
+  UserPhoto mediumblob
 );
 
 create table userDevices(
