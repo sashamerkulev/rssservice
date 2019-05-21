@@ -65,6 +65,7 @@ func Init(_repository domain.MainRepository) {
 	r.HandleFunc("/users/info", userInfoHandler).Methods("GET")
 	r.HandleFunc("/users/update", usersUpdateHandler).Methods("PUT")
 	r.HandleFunc("/users/uploadPhoto", usersUploadPhotoHandler).Methods("PUT")
+	r.HandleFunc("/users/downloadPhoto", usersDownloadPhotoHandler).Methods("GET")
 	err := http.ListenAndServe(":9000", r)
 	if err != nil {
 		repository.GetLogger(-1, "").Log("ERROR", "INIT", err.Error())

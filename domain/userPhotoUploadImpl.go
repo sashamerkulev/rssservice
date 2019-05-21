@@ -6,15 +6,19 @@ import (
 
 type UserPhotoUploadRepository interface {
 	UploadUserPhoto(userId int64, photo []byte, logger logger.Logger) error
+	GetUserPhoto(userId int64, logger logger.Logger) (photo []byte, err error)
 }
 
-type UserPhotoUpload struct {
+type UserPhoto struct {
 	UserId     int64
-	Photo      []byte
 	Logger     logger.Logger
 	Repository UserPhotoUploadRepository
 }
 
-func (upu UserPhotoUpload) UploadUserPhoto() error {
-	return upu.Repository.UploadUserPhoto(upu.UserId, upu.Photo, upu.Logger)
+func (upu UserPhoto) UploadUserPhoto(photo []byte) error {
+	return upu.Repository.UploadUserPhoto(upu.UserId, photo, upu.Logger)
+}
+
+func (upu UserPhoto) GetUserPhoto() (photo []byte, err error) {
+	return upu.Repository.GetUserPhoto(upu.UserId, upu.Logger)
 }
