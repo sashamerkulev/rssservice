@@ -85,7 +85,10 @@ func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	w.WriteHeader(http.StatusOK)
+	//w.WriteHeader(http.StatusOK)
+	var ur = domain.UserInfo{Logger: logger, UserId: userId, Repository: mysql.UserInfoRepositoryImpl{}}
+	user, err := ur.GetUserInfo()
+	finishUserResponse(w, user, err, logger)
 }
 
 func usersDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) {

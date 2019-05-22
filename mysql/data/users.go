@@ -3,6 +3,7 @@ package data
 import (
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/model"
 	"time"
 )
 
@@ -96,4 +97,22 @@ func UploadUserPhoto(userId int64, photo []byte, logger logger.Logger) (err erro
 		return errors.UserPhotoUploadError()
 	}
 	return nil
+}
+
+func GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error) {
+	rows, err := DB.Query("select UserId, UserName, UserPhone from userInfo where userId = ?", userId)
+	if err != nil {
+		logger.Log("ERROR", "GETUSERINFO", err.Error())
+		return model.User{}, nil
+	}
+	if rows.Next() {
+		user := model.User{}
+		err := rows.Scan(&user.UserId, &user.Name, &user.Phone)
+		if err != nil {
+			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
+		}
+		return user, nil
+	}
+	return model.User{}, errors.UserNotFoundError()
+
 }

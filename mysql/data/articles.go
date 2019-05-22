@@ -40,8 +40,8 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	result, err := DB.Exec("DELETE FROM Article WHERE "+
-		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId " +
-		" UNION " +
+		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId "+
+		" UNION "+
 		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
 		"AND PubDate <= ?", wipeTime)
 	if err != nil {
@@ -108,9 +108,9 @@ func GetUserActivityArticles(userId int64, logger logger.Logger) (results []mode
 		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
 		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
 		" 		from article a "+
-		" 		where a.articleId IN (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId AND ual.UserId = ? " +
-		" UNION " +
-	    " SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId AND uac.UserId = ?) " +
+		" 		where a.articleId IN (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId AND ual.UserId = ? "+
+		" UNION "+
+		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId AND uac.UserId = ?) "+
 		" order by a.PubDate desc ",
 		userId, userId, userId, userId, userId)
 	if err != nil {
@@ -201,5 +201,5 @@ func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.
 		}
 		return article, nil
 	}
-	return model.ArticleUser{}, nil
+	return model.ArticleUser{}, errors.ArticleNotFoundError()
 }

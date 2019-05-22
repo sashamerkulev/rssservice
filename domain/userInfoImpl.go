@@ -6,7 +6,7 @@ import (
 )
 
 type UserInfoRepository interface {
-	GetUserInfo(userId int64, logger logger.Logger) error
+	GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error)
 }
 
 type UserInfo struct {
@@ -16,6 +16,5 @@ type UserInfo struct {
 }
 
 func (ui UserInfo) GetUserInfo() (user model.User, err error) {
-	err = ui.Repository.GetUserInfo(ui.UserId, ui.Logger)
-	return model.User{UserId: ui.UserId}, err
+	return ui.Repository.GetUserInfo(ui.UserId, ui.Logger)
 }
