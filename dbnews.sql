@@ -49,6 +49,7 @@ create table userArticleLikes(
   UserId bigint not null,
   ArticleId   bigint not null,
   Dislike bool not null,
+  Timestamp datetime not null,
   FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
   FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
@@ -70,6 +71,7 @@ create table userCommentLikes(
   UserId bigint not null,
   CommentId   bigint not null,
   Dislike bool not null,
+  Timestamp datetime not null,
   FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
   FOREIGN KEY (CommentId) REFERENCES userarticlecomments(CommentId)
 );

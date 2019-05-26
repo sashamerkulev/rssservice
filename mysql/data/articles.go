@@ -160,17 +160,17 @@ func RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logge
 }
 
 func SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error {
-	_, err := DB.Exec("update userArticleLikes set dislike = ? where userId=? and articleId = ?", dislike, userId, articleId)
+	_, err := DB.Exec("update userArticleLikes set dislike = ?, timestamp = ? where userId=? and articleId = ?", dislike, time.Now(), userId, articleId)
 	return err
 }
 
 func LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike) values(?,?,?)", userId, articleId, false)
+	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, false, time.Now())
 	return err
 }
 
 func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike) values(?,?,?)", userId, articleId, true)
+	_, err := DB.Exec("insert into userArticleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, true, time.Now())
 	return err
 }
 
