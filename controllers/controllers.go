@@ -57,6 +57,8 @@ func Init(_repository domain.MainRepository) {
 	r.HandleFunc("/articles/{articleId}/like", articlesLikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/{articleId}/dislike", articlesDislikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/{articleId}/comments", articlesCommentsHandler).Methods("GET")
+	r.HandleFunc("/articles/{articleId}/comments", articlesAddCommentsHandler).Methods("POST")
+	r.HandleFunc("/articles/{articleId}/comments/{commentId}", articlesDeleteCommentsHandler).Methods("DELETE")
 	r.HandleFunc("/articles/{articleId}/comments/{commentId}/like", articlesCommentsLikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/{articleId}/comments/{commentId}/dislike", articlesCommentsDislikeHandler).Methods("PUT")
 	r.HandleFunc("/setup/register", setupRegisterHandler).Methods("POST")
