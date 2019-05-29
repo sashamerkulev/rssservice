@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	"github.com/go-sql-driver/mysql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
@@ -61,28 +62,37 @@ func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (re
 	currentTime := time.Now()
 	// TODO improve SQL statements and remove this 'for'
 	for i := 0; i < len(reader.Urls); i++ {
-		rows, err := DB.Query("select a.*, "+
+		rows, err := DB.Query("select * from (select a.*, "+
+			" (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, "+
+			" (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, "+
+			" 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId "+
+			" 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, "+
 			" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
 			" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
 			" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
 			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
 			" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
 			" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
-			" 		from article a "+
-			" 		where a.sourcename = ? and a.PubDate >= ? and a.PubDate < ?"+
-			" order by a.PubDate desc "+
+			" 		from article a ) b"+
+			" 		where b.sourcename = ? and (b.PubDate >= ? and b.PubDate < ? or (b.lastUserLikeActivity >= ? or b.lastUserCommentActivity >= ? or b.lastUserLikeCommentActivity >= ?))"+
 			" limit 20",
-			userId, userId, userId, reader.Urls[i].Name, lastTime, currentTime)
+			userId, userId, userId, reader.Urls[i].Name, lastTime, currentTime, lastTime, lastTime, lastTime)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 			continue
 		}
 		for rows.Next() {
+			var lastUserLikeActivity mysql.NullTime
+			var lastUserCommentActivity mysql.NullTime
+			var lastUserLikeCommentActivity mysql.NullTime
+
 			article := model.ArticleUser{}
 			err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
 				&article.PubDate, &article.Category, &article.PictureUrl,
+				&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,
 				&article.Dislikes, &article.Likes, &article.Comments,
 				&article.Dislike, &article.Like, &article.Comment)
+			article.LastActivityDate = getMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
 			if err != nil {
 				logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 			}
@@ -91,46 +101,7 @@ func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (re
 	}
 
 	sort.Slice(results, func(i, j int) bool {
-		return results[i].PubDate.After(results[j].PubDate)
-	})
-
-	return results, nil
-}
-
-func GetUserActivityArticles(userId int64, logger logger.Logger) (results []model.ArticleUser, err error) {
-	results = make([]model.ArticleUser, 0)
-	// TODO improve SQL statements and remove this 'for'
-	rows, err := DB.Query("select a.*, "+
-		" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
-		" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
-		" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
-		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
-		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
-		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
-		" 		from article a "+
-		" 		where a.articleId IN (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId AND ual.UserId = ? "+
-		" UNION "+
-		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId AND uac.UserId = ?) "+
-		" order by a.PubDate desc ",
-		userId, userId, userId, userId, userId)
-	if err != nil {
-		logger.Log("ERROR", "GETUSERACTIVITYARTICLES", err.Error())
-		return results, err
-	}
-	for rows.Next() {
-		article := model.ArticleUser{}
-		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
-			&article.PubDate, &article.Category, &article.PictureUrl,
-			&article.Dislikes, &article.Likes, &article.Comments,
-			&article.Dislike, &article.Like, &article.Comment)
-		if err != nil {
-			logger.Log("ERROR", "GETUSERACTIVITYARTICLES", err.Error())
-		}
-		results = append(results, article)
-	}
-
-	sort.Slice(results, func(i, j int) bool {
-		return results[i].PubDate.After(results[j].PubDate)
+		return results[i].LastActivityDate.After(results[j].LastActivityDate)
 	})
 
 	return results, nil
@@ -176,6 +147,10 @@ func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
 
 func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
 	rows, err := DB.Query("select a.*, "+
+		" (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, "+
+		" (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, "+
+		" 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId "+
+		" 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, "+
 		" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
 		" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
 		" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
@@ -183,23 +158,52 @@ func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.
 		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
 		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
 		" 		from article a "+
-		" 		where a.articleId = ?"+
-		" order by a.PubDate desc ",
+		" 		where a.articleId = ?",
 		userId, userId, userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 		return model.ArticleUser{}, nil
 	}
 	if rows.Next() {
+		var lastUserLikeActivity mysql.NullTime
+		var lastUserCommentActivity mysql.NullTime
+		var lastUserLikeCommentActivity mysql.NullTime
 		article := model.ArticleUser{}
 		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
 			&article.PubDate, &article.Category, &article.PictureUrl,
+			&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,
 			&article.Dislikes, &article.Likes, &article.Comments,
 			&article.Dislike, &article.Like, &article.Comment)
+		article.LastActivityDate = getMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 		}
 		return article, nil
 	}
 	return model.ArticleUser{}, errors.ArticleNotFoundError()
+}
+
+func getMaxTime(t1 mysql.NullTime, t2 mysql.NullTime, t3 mysql.NullTime, defaultTime time.Time) time.Time {
+	max12 := getMaxTime2(t1, t2)
+	max3 := getMaxTime2(max12, t3)
+	if max3.Valid {
+		return max3.Time
+	}
+	return defaultTime
+}
+
+func getMaxTime2(t1 mysql.NullTime, t2 mysql.NullTime) mysql.NullTime {
+	if t1.Valid && t2.Valid {
+		if t1.Time.After(t2.Time) {
+			return t1
+		}
+		return t2
+	}
+	if t1.Valid {
+		return t1
+	}
+	if t2.Valid {
+		return t2
+	}
+	return mysql.NullTime{Valid: false}
 }

@@ -45,26 +45,6 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+val+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
 }
 
-func usersActivityArticlesHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
-		return
-	}
-	logger.Log("DEBUG", "USERSACTIVITYARTICLESHANDLER", r.RequestURI)
-	au := domain.UserArticles{
-		Logger:     logger,
-		UserId:     getAuthorizationToken(r),
-		Repository: mysql.UserArticlesRepositoryImpl{},
-	}
-	articles, err := au.GetUserFavoriteArticles()
-	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(articles)
-}
-
 func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
 	logger, err := prepareRequest(w, r)
 	if err != nil {

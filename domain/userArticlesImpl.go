@@ -8,7 +8,6 @@ import (
 
 type UserArticlesRepository interface {
 	GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) ([]model.ArticleUser, error)
-	GetUserFavoriteArticles(userId int64, logger logger.Logger) ([]model.ArticleUser, error)
 }
 
 type UserArticles struct {
@@ -20,8 +19,4 @@ type UserArticles struct {
 
 func (ua UserArticles) GetUserArticles() ([]model.ArticleUser, error) {
 	return ua.Repository.GetUserArticles(ua.UserId, ua.LastTime, ua.Logger)
-}
-
-func (ua UserArticles) GetUserFavoriteArticles() ([]model.ArticleUser, error) {
-	return ua.Repository.GetUserFavoriteArticles(ua.UserId, ua.Logger)
 }

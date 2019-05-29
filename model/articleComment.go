@@ -14,9 +14,9 @@ type ArticleComment struct {
 
 type UserArticleComment struct {
 	ArticleComment
-	Likes        int64
-	Dislikes     int64
-	Like         int
-	Dislike      int
-	CommentOwner int
+	Likes    int64
+	Dislikes int64
+	Like     int
+	Dislike  int
+	Owner    int
 }
