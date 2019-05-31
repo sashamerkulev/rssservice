@@ -107,18 +107,18 @@ func FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger)
 	rows, err := DB.Query("select dislike from userArticleLikes WHERE userId = ? and articleId = ?", userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "FINDUSERARTICLE", err.Error())
-		return false, errors.ArticleNotFoundError()
+		return false, errors.ArticleNotFoundError
 	}
 	defer rows.Close()
 	if rows.Next() {
 		var dislike bool
 		err = rows.Scan(&dislike)
 		if err != nil {
-			return false, errors.ArticleNotFoundError()
+			return false, errors.ArticleNotFoundError
 		}
 		return dislike, nil
 	}
-	return false, errors.ArticleNotFoundError()
+	return false, errors.ArticleNotFoundError
 }
 
 func RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error {
@@ -176,7 +176,7 @@ func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.
 		}
 		return article, nil
 	}
-	return model.ArticleUser{}, errors.ArticleNotFoundError()
+	return model.ArticleUser{}, errors.ArticleNotFoundError
 }
 
 func getMaxTime(t1 mysql.NullTime, t2 mysql.NullTime, t3 mysql.NullTime, defaultTime time.Time) time.Time {

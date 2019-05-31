@@ -1,28 +1,13 @@
 package errors
 
-func UserNotFoundError() error {
-	return Error("User not found")
-}
-
-func TransactionOpenError() error {
-	return Error("Transaction is failed")
-}
-
-func UserUpdateError() error {
-	return Error("User updating is failed")
-}
-
-func UserPhotoUploadError() error {
-	return Error("User photo updating is failed")
-}
-
-func UserRegistrationError() error {
-	return Error("User registration is failed")
-}
-
-func ArticleNotFoundError() error {
-	return Error("Article not found")
-}
+var (
+	UserNotFoundError     = Error("User not found")
+	TransactionOpenError  = Error("Transaction is failed")
+	UserUpdateError       = Error("User updating is failed")
+	UserPhotoUploadError  = Error("User photo updating is failed")
+	UserRegistrationError = Error("User registration is failed")
+	ArticleNotFoundError  = Error("Article not found")
+)
 
 func Error(text string) error {
 	return &errorString{text}

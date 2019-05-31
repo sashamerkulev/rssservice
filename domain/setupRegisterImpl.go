@@ -29,7 +29,7 @@ func (ru SetupRegister) RegisterUser() (user model.User, err error) {
 		token, _ := getJwtToken(ru.SetupId)
 		err = ru.Repository.AddTokenForUserIdAndDeviceId(userId, ru.SetupId, token, ru.Logger)
 		if err != nil {
-			return model.User{}, errors.UserRegistrationError()
+			return model.User{}, errors.UserRegistrationError
 		}
 		return model.User{UserId: userId, Name: "", Phone: "", Token: token}, err
 	} else {
