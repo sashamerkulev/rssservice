@@ -54,6 +54,7 @@ create table userArticleLikes(
   FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
 create unique index index_userArticleLikes on userArticleLikes(UserId, ArticleId);
+create index index_userArticleLikes_timestamp on userArticleLikes(Timestamp);
 
 create table userArticleComments(
   CommentId  bigint auto_increment primary key,
@@ -66,6 +67,7 @@ create table userArticleComments(
   FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
 );
 create unique index index_userArticleComments on userArticleComments(UserId, ArticleId, Timestamp);
+create index index_userArticleComments_timestamp on userArticleComments(Timestamp);
 
 create table userCommentLikes(
   UserId bigint not null,
@@ -76,3 +78,4 @@ create table userCommentLikes(
   FOREIGN KEY (CommentId) REFERENCES userarticlecomments(CommentId)
 );
 create unique index index_userCommentLikes on userCommentLikes(UserId, CommentId);
+create index index_userCommentLikes_timestamp on userCommentLikes(Timestamp);
