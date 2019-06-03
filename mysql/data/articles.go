@@ -142,19 +142,19 @@ func DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
 }
 
 func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
-	rows, err := DB.Query("select a.*, "+
-		" (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, "+
-		" (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, "+
-		" 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId "+
-		" 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, "+
-		" (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, "+
-		" 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, "+
-		" 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, "+
-		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, "+
-		" 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, "+
-		" 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment "+
-		" 		from article a "+
-		" 		where a.articleId = ?",
+	rows, err := DB.Query(`select a.*, 
+		 (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
+		 (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
+		 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId 
+		 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, 
+		 (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, 
+		 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, 
+		 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, 
+		 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, 
+		 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
+		 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
+		 		from article a 
+		 		where a.articleId = ?`,
 		userId, userId, userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "GETARTICLEUSER", err.Error())
