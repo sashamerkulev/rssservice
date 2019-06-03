@@ -16,14 +16,14 @@ func (ArticleCommentRepositoryImpl) AddComment(userId int64, articleId int64, co
 	return model.UserArticleComment{}, nil
 }
 
-func (ArticleCommentRepositoryImpl) DeleteComment(userId int64, articleId int64, commentId int64, logger logger.Logger) (err error) {
+func (ArticleCommentRepositoryImpl) DeleteComment(userId int64, commentId int64, logger logger.Logger) (err error) {
 	return nil
 }
 
-func (ArticleCommentRepositoryImpl) LikeComment(userId int64, articleId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
+func (ArticleCommentRepositoryImpl) LikeComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
 	return model.UserArticleComment{}, nil
 }
 
-func (ArticleCommentRepositoryImpl) DislikeComment(userId int64, articleId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
+func (ArticleCommentRepositoryImpl) DislikeComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
 	return model.UserArticleComment{}, nil
 }

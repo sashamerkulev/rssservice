@@ -117,9 +117,15 @@ func articlesCommentsDislikeHandler(w http.ResponseWriter, r *http.Request) {
 
 func prepareArticleCommentActivity(logger logger.Logger, r *http.Request) (domain.ArticleComment, error) {
 	vars := mux.Vars(r)
+	var aId int64
+	var cId int64
 	articleId := vars["articleId"]
-	aId, err := strconv.ParseInt(articleId, 10, 64)
 	commentId := vars["commentId"]
-	cId, err := strconv.ParseInt(commentId, 10, 64)
-	return domain.ArticleComment{ArticleId: aId, UserId: getAuthorizationToken(r), CommentId: cId, Logger: logger, Repository: mysql.ArticleCommentRepositoryImpl{}}, err
+	if articleId != "" {
+		aId, _ = strconv.ParseInt(articleId, 10, 64)
+	}
+	if commentId != "" {
+		cId, _ = strconv.ParseInt(commentId, 10, 64)
+	}
+	return domain.ArticleComment{ArticleId: aId, UserId: getAuthorizationToken(r), CommentId: cId, Logger: logger, Repository: mysql.ArticleCommentRepositoryImpl{}}, nil
 }
