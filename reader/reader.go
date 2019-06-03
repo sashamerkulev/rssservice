@@ -38,7 +38,7 @@ var Urls = []Link{
 	{Link: "http://feeds.bbci.co.uk/russian/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "bbcrussian", Title: "BBC Russian"},
 	{Link: "http://tass.ru/rss/v2.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "tass", Title: "ТАСС"},
 	{Link: "http://www.nkj.ru/rss/", Layout: time.RFC1123Z, Name: "nkj", Title: "Наука и Жизнь"},
-	{Link: "http://www.mk.ru/rss/index.xml", Layout: time.RFC1123Z, Name: "mk", Title: "Московский комсомолец"},
+	//{Link: "http://www.mk.ru/rss/index.xml", Layout: time.RFC1123Z, Name: "mk", Title: "Московский комсомолец"},
 	{Link: "http://www.cnews.ru/inc/rss/news.xml", Layout: time.RFC1123Z, Name: "cnews", Title: "CNews"},
 	{Link: "https://news.mail.ru/rss/91/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "mailnews", Title: "Mail.news"}, //Fri, 8 Mar 2019 15:49:34 +0300
 	{Link: "http://www.sport-express.ru/controllers/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress", Title: "Спорт-Экспресс"},
