@@ -7,6 +7,7 @@ var (
 	UserPhotoUploadError  = Error("User photo updating is failed")
 	UserRegistrationError = Error("User registration is failed")
 	ArticleNotFoundError  = Error("Article not found")
+	CommentNotFoundError  = Error("Comment not found")
 )
 
 func Error(text string) error {

@@ -15,12 +15,12 @@ import (
 func AddArticles(articles []model.Article, logger logger.Logger) {
 	tx, err := DB.Begin()
 	if err != nil {
-		logger.Log("ERROR", "ADDALL", err.Error())
+		logger.Log("ERROR", "ADDARTICLES", err.Error())
 		return
 	}
 	insertStmt, err := DB.Prepare("INSERT INTO article(SourceName, Title, Link, Description, PubDate, Category, PictureUrl) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
-		logger.Log("ERROR", "ADDALL", err.Error())
+		logger.Log("ERROR", "ADDARTICLES", err.Error())
 		tx.Rollback()
 		return
 	}

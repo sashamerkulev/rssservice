@@ -7,10 +7,11 @@ import (
 
 type ArticleCommentRepository interface {
 	GetComments(userId int64, articleId int64, logger logger.Logger) (comments []model.UserArticleComment, err error)
-	AddComment(userId int64, articleId int64, comments string, logger logger.Logger) (comment model.UserArticleComment, err error)
+	AddComment(userId int64, articleId int64, comments string, logger logger.Logger) (commentId int64, err error)
 	DeleteComment(userId int64, commentId int64, logger logger.Logger) (err error)
 	LikeComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error)
 	DislikeComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error)
+	GetComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error)
 }
 
 type ArticleComment struct {
@@ -26,7 +27,8 @@ func (ac ArticleComment) GetComments() (comments []model.UserArticleComment, err
 }
 
 func (ac ArticleComment) AddComment(comments string) (comment model.UserArticleComment, err error) {
-	return ac.Repository.AddComment(ac.UserId, ac.ArticleId, comments, ac.Logger)
+	commentId, err := ac.Repository.AddComment(ac.UserId, ac.ArticleId, comments, ac.Logger)
+	return ac.Repository.GetComment(ac.UserId, commentId, ac.Logger)
 }
 
 func (ac ArticleComment) DeleteComment() (err error) {
