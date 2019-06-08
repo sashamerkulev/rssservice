@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
@@ -14,8 +15,9 @@ func AddComment(userId int64, articleId int64, comments string, logger logger.Lo
 		return
 	}
 	defer tx.Commit()
-	res, err := DB.Exec("INSERT INTO userArticleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?,?)", userId, articleId, time.Now(), comments, 0)
+	res, err := DB.Exec("INSERT INTO userArticleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?)", userId, articleId, time.Now(), comments, 0)
 	if err != nil {
+		logger.Log("ERROR", "ADDCOMMENT", "userId="+fmt.Sprint(userId))
 		logger.Log("ERROR", "ADDCOMMENT", err.Error())
 		tx.Rollback()
 		return 0, err

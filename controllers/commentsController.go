@@ -63,7 +63,7 @@ func articlesAddCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	comments := r.Form.Get("comment")
+	comments := r.Form.Get("comments")
 	comment, err := articleUser.AddComment(comments)
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESCOMMENTSHANDLER", err.Error())
