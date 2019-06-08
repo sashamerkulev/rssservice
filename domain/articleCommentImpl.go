@@ -3,10 +3,11 @@ package domain
 import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
+	"time"
 )
 
 type ArticleCommentRepository interface {
-	GetComments(userId int64, articleId int64, logger logger.Logger) (comments []model.UserArticleComment, err error)
+	GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error)
 	AddComment(userId int64, articleId int64, comments string, logger logger.Logger) (commentId int64, err error)
 	DeleteComment(userId int64, commentId int64, logger logger.Logger) (err error)
 	LikeComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error)
@@ -15,15 +16,16 @@ type ArticleCommentRepository interface {
 }
 
 type ArticleComment struct {
-	UserId     int64
-	ArticleId  int64
-	CommentId  int64
-	Logger     logger.Logger
-	Repository ArticleCommentRepository
+	UserId              int64
+	ArticleId           int64
+	CommentId           int64
+	LastArticleReadDate time.Time
+	Logger              logger.Logger
+	Repository          ArticleCommentRepository
 }
 
 func (ac ArticleComment) GetComments() (comments []model.UserArticleComment, err error) {
-	return ac.Repository.GetComments(ac.UserId, ac.ArticleId, ac.Logger)
+	return ac.Repository.GetComments(ac.UserId, ac.ArticleId, ac.LastArticleReadDate, ac.Logger)
 }
 
 func (ac ArticleComment) AddComment(comments string) (comment model.UserArticleComment, err error) {

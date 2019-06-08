@@ -16,19 +16,16 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	val := r.Form.Get("lastArticleReadDate")
-	loc, _ := time.LoadLocation("UTC")
+	params := r.URL.Query()["lastArticleReadDate"]
+	// loc, _ := time.LoadLocation("UTC")
 	var datetime time.Time
-	if val == "" {
-		datetime = time.Date(2019, 1, 1, 0, 0, 0, 0, loc)
+	if len(params) > 0 {
+		datetime = domain.StringToDate(params[0])
+		logger.Log("DEBUG", "ARTICLESHANDLER", datetime.String())
 	} else {
-		//2019-05-03T16:54:07
-		datetime, err = time.Parse("2006-01-02T15:04:05", val)
-		if err != nil {
-			logger.Log("ERROR", "ARTICLES", err.Error())
-		}
-		datetime = datetime.Add(time.Duration(-3) * time.Hour) // TODO
+		datetime = domain.StringToDate("")
 	}
+
 	au := domain.UserArticles{
 		LastTime:   datetime,
 		Logger:     logger,
@@ -42,7 +39,7 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(articles)
-	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+val+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
+	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+datetime.String()+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
 }
 
 func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {

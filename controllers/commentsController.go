@@ -8,6 +8,7 @@ import (
 	"github.com/sashamerkulev/rssservice/mysql"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 func articlesCommentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -62,7 +63,7 @@ func articlesAddCommentsHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	comments := r.Form.Get("comments")
+	comments := r.Form.Get("comment")
 	comment, err := articleUser.AddComment(comments)
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESCOMMENTSHANDLER", err.Error())
@@ -121,11 +122,19 @@ func prepareArticleCommentActivity(logger logger.Logger, r *http.Request) (domai
 	var cId int64
 	articleId := vars["articleId"]
 	commentId := vars["commentId"]
+	params := r.URL.Query()["lastCommentsReadDate"]
 	if articleId != "" {
 		aId, _ = strconv.ParseInt(articleId, 10, 64)
 	}
 	if commentId != "" {
 		cId, _ = strconv.ParseInt(commentId, 10, 64)
+	}
+	var datetime time.Time
+	if len(params) > 0 {
+		datetime = domain.StringToDate(params[0])
+		logger.Log("DEBUG", "ARTICLESCOMMENTSHANDLER", datetime.String())
+	} else {
+		datetime = domain.StringToDate("")
 	}
 	return domain.ArticleComment{ArticleId: aId, UserId: getAuthorizationToken(r), CommentId: cId, Logger: logger, Repository: mysql.ArticleCommentRepositoryImpl{}}, nil
 }

@@ -29,7 +29,7 @@ func AddComment(userId int64, articleId int64, comments string, logger logger.Lo
 	return commentId, nil
 }
 
-func GetComments(userId int64, articleId int64, logger logger.Logger) (comments []model.UserArticleComment, err error) {
+func GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
 	return make([]model.UserArticleComment, 0), nil
 }
 

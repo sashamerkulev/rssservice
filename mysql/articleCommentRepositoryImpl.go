@@ -4,13 +4,14 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/mysql/data"
+	"time"
 )
 
 type ArticleCommentRepositoryImpl struct {
 }
 
-func (ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, logger logger.Logger) (comments []model.UserArticleComment, err error) {
-	return data.GetComments(userId, articleId, logger)
+func (ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
+	return data.GetComments(userId, articleId, lastArticleReadDate, logger)
 }
 
 func (ArticleCommentRepositoryImpl) AddComment(userId int64, articleId int64, comments string, logger logger.Logger) (commentId int64, err error) {
