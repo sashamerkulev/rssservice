@@ -3,7 +3,6 @@ package data
 import (
 	"fmt"
 	"github.com/go-sql-driver/mysql"
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
@@ -88,7 +87,7 @@ func GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) (re
 			&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,
 			&article.Dislikes, &article.Likes, &article.Comments,
 			&article.Dislike, &article.Like, &article.Comment)
-		article.LastActivityDate = getMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
+		article.LastActivityDate = GetMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 		}
@@ -170,7 +169,7 @@ func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.
 			&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,
 			&article.Dislikes, &article.Likes, &article.Comments,
 			&article.Dislike, &article.Like, &article.Comment)
-		article.LastActivityDate = getMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
+		article.LastActivityDate = GetMaxTime(lastUserLikeActivity, lastUserCommentActivity, lastUserLikeCommentActivity, article.PubDate)
 		if err != nil {
 			logger.Log("ERROR", "GETARTICLEUSER", err.Error())
 		}
@@ -179,27 +178,3 @@ func GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.
 	return model.ArticleUser{}, errors.ArticleNotFoundError
 }
 
-func getMaxTime(t1 mysql.NullTime, t2 mysql.NullTime, t3 mysql.NullTime, defaultTime time.Time) time.Time {
-	max12 := getMaxTime2(t1, t2)
-	max3 := getMaxTime2(max12, t3)
-	if max3.Valid {
-		return max3.Time
-	}
-	return defaultTime
-}
-
-func getMaxTime2(t1 mysql.NullTime, t2 mysql.NullTime) mysql.NullTime {
-	if t1.Valid && t2.Valid {
-		if t1.Time.After(t2.Time) {
-			return t1
-		}
-		return t2
-	}
-	if t1.Valid {
-		return t1
-	}
-	if t2.Valid {
-		return t2
-	}
-	return mysql.NullTime{Valid: false}
-}

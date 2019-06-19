@@ -9,6 +9,7 @@ type ArticleComment struct {
 	Name      string
 	Comment   string
 	PubDate   time.Time
+	LastActivityDate time.Time
 	Status    int
 }
 
