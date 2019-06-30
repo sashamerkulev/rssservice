@@ -103,7 +103,7 @@ func GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error
 	rows, err := DB.Query("select UserId, UserName, UserPhone from userInfo where userId = ?", userId)
 	if err != nil {
 		logger.Log("ERROR", "GETUSERINFO", err.Error())
-		return model.User{}, nil
+		return model.User{Name: ""}, nil
 	}
 	if rows.Next() {
 		user := model.User{}
@@ -113,6 +113,5 @@ func GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error
 		}
 		return user, nil
 	}
-	return model.User{}, errors.UserNotFoundError
-
+	return model.User{Name: ""}, errors.UserNotFoundError
 }

@@ -11,7 +11,11 @@ type ArticleCommentRepositoryImpl struct {
 }
 
 func (ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
-	return data.GetComments(userId, articleId, lastArticleReadDate, logger)
+	list, err := data.GetComments(userId, articleId, lastArticleReadDate, logger)
+	for i:= 0; i < len(list); i++ {
+		list[i] = model.MakeSureCommenterExists(list[i])
+	}
+	return list, err
 }
 
 func (ArticleCommentRepositoryImpl) AddComment(userId int64, articleId int64, comments string, logger logger.Logger) (commentId int64, err error) {
@@ -23,7 +27,8 @@ func (ArticleCommentRepositoryImpl) DeleteComment(userId int64, commentId int64,
 }
 
 func (ArticleCommentRepositoryImpl) GetComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
-	return data.GetComment(userId, commentId, logger)
+	uac, err := data.GetComment(userId, commentId, logger)
+	return model.MakeSureCommenterExists(uac), err
 }
 
 func (ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentId int64, logger logger.Logger) (bool, error) {
