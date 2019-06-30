@@ -37,6 +37,10 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 	}
 }
 
+func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
+
+}
+
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	result, err := DB.Exec("DELETE FROM Article WHERE "+
 		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId "+

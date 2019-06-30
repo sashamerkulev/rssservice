@@ -25,6 +25,7 @@ func wipe(logger logger.Logger) {
 	for _ = range ticker.C {
 		wipeTime := time.Now()
 		wipeTime = wipeTime.Add(-12 * time.Hour)
+		data.WipeOldActivities(wipeTime, logger)
 		data.WipeOldArticles(wipeTime, logger)
 	}
 }
