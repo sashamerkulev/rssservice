@@ -81,6 +81,15 @@ func RegisterUser(deviceId string, firebaseId string, userToken string, logger l
 	return newUserId, err
 }
 
+func UpdateFirebaseId(userId int64, firebaseId string, logger logger.Logger) error {
+	_, err := DB.Exec("update userDevices set firebaseId = ? where userId = ?", firebaseId, userId)
+	if err != nil {
+		logger.Log("ERROR", "REGISTERUSER", err.Error())
+		return errors.UserRegistrationError
+	}
+	return nil
+}
+
 func UpdateUser(userId int64, name string, phone string, logger logger.Logger) (err error) {
 	_, err = DB.Exec("update userInfo set UserName=?, UserPhone=? where userId = ?", name, phone, userId)
 	if err != nil {

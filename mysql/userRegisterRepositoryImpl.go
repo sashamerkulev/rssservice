@@ -19,3 +19,7 @@ func (UserRegisterRepositoryImpl) AddTokenForUserIdAndDeviceId(userId int64, dev
 func (UserRegisterRepositoryImpl) RegisterUser(deviceId string, firebaseId string, token string, logger logger.Logger) (userId int64, err error) {
 	return data.RegisterUser(deviceId, firebaseId, token, logger)
 }
+
+func (UserRegisterRepositoryImpl) UpdateFirebaseId(userId int64, firebaseId string, logger logger.Logger) error {
+	return data.UpdateFirebaseId(userId, firebaseId, logger)
+}

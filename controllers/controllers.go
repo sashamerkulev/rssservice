@@ -62,6 +62,7 @@ func Init(_repository domain.MainRepository) {
 	r.HandleFunc("/articles/comments/{commentId}/dislike", articlesCommentsDislikeHandler).Methods("PUT")
 	r.HandleFunc("/setup/register", setupRegisterHandler).Methods("POST")
 	r.HandleFunc("/setup/sources", setupSourcesHandler).Methods("GET")
+	r.HandleFunc("/setup/firebase", setupFirebaseHandler).Methods("POST")
 	r.HandleFunc("/users", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/users/info", userInfoHandler).Methods("GET")
 	r.HandleFunc("/users/update", usersUpdateHandler).Methods("PUT")

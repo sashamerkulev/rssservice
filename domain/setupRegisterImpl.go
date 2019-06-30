@@ -12,10 +12,11 @@ type SetupRegisterRepository interface {
 	FindUserIdByDeviceId(deviceId string, logger logger.Logger) (userId int64, err error)
 	AddTokenForUserIdAndDeviceId(userId int64, deviceId string, token string, logger logger.Logger) error
 	RegisterUser(deviceId string, firebaseId string, token string, logger logger.Logger) (userId int64, err error)
+	UpdateFirebaseId(userId int64, firebaseId string, logger logger.Logger) error
 }
 
 type SetupRegister struct {
-	SetupId   string
+	SetupId    string
 	FirebaseId string
 	Logger     logger.Logger
 	Repository SetupRegisterRepository
@@ -37,6 +38,10 @@ func (ru SetupRegister) RegisterUser() (user model.User, err error) {
 		userId, err := ru.Repository.RegisterUser(ru.SetupId, ru.FirebaseId, token, ru.Logger)
 		return model.User{UserId: userId, Name: "", Phone: "", Token: token}, err
 	}
+}
+
+func (ru SetupRegister) UpdateFirebaseId(userId int64) error {
+	return ru.Repository.UpdateFirebaseId(userId, ru.FirebaseId, ru.Logger)
 }
 
 func getJwtToken(setupId string) (string, error) {
