@@ -56,7 +56,7 @@ func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	form := r.MultipartForm
 	files := form.File["File"]
 	for _, file := range files {
-		if file.Size < 0 {
+		if file.Size <= 0 {
 			continue
 		}
 		logger.Log("DEBUG", "USERSUPLOADPHOTOHANDLER", "Uploading File: "+file.Filename+" File Size: "+fmt.Sprint(file.Size))
