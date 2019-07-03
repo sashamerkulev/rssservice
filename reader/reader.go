@@ -41,9 +41,11 @@ var Urls = []Link{
 	//{Link: "http://www.mk.ru/rss/index.xml", Layout: time.RFC1123Z, Name: "mk", Title: "Московский комсомолец"},
 	{Link: "http://www.cnews.ru/inc/rss/news.xml", Layout: time.RFC1123Z, Name: "cnews", Title: "CNews"},
 	{Link: "https://news.mail.ru/rss/91/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "mailnews", Title: "Mail.news"}, //Fri, 8 Mar 2019 15:49:34 +0300
-	{Link: "http://www.sport-express.ru/controllers/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress", Title: "Спорт-Экспресс"},
+	{Link: "https://www.sport-express.ru/services/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress", Title: "Спорт-Экспресс"},
 	{Link: "http://dp.ru/rss", Layout: time.RFC1123Z, Name: "dp", Title: "Деловой Петербург"},
 	{Link: "https://sdelanounas.ru/index/rss/", Layout: time.RFC1123Z, Name: "sdelanounas", Title: "Сделано у нас"},
+	{Link:"http://www.rosbalt.ru/feed/", Layout: time.RFC1123Z, Name: "rosbalt", Title: "Росбалт"},
+	//{Link:"http://feeds.feedburner.com/iarex/?utm_source=social-icons&utm_medium=cpc&utm_campaign=web", Layout: time.RFC1123Z, Name: "iarex", Title: "ИА REX"},
 }
 
 type rss2 struct {

@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/sashamerkulev/rssservice/controllers"
 	"github.com/sashamerkulev/rssservice/domain"
-	"github.com/sashamerkulev/rssservice/fcm"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/mysql/data"
 	"github.com/sashamerkulev/rssservice/reader"
@@ -16,7 +15,6 @@ func read(logger logger.Logger) {
 	ticker := time.NewTicker(time.Minute * 15)
 	for _ = range ticker.C {
 		reader.Do(data.AddArticles, logger)
-		fcm.SendNotificationNewArticlesMessage()
 	}
 }
 
