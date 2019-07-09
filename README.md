@@ -1,5 +1,5 @@
 
-# Simple RSS web service
+# Simple RSS REST service
 
 
 License

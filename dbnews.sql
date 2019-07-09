@@ -24,8 +24,7 @@ create index index_log_severity on log(Severity(50));
 create table userInfo(
   UserId bigint auto_increment primary key,
   UserName mediumtext,
-  UserPhone mediumtext,
-  UserPhoto mediumblob
+  UserPhone mediumtext
 );
 
 create table userDevices(
