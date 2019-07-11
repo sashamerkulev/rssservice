@@ -10,6 +10,5 @@ type UserInfoRepositoryImpl struct {
 }
 
 func (UserInfoRepositoryImpl) GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error) {
-	userInfo, err := data.GetUserInfo(userId, logger)
-	return model.MakeSureNameExists(userInfo), err
+	return data.GetUserInfo(userId, logger)
 }

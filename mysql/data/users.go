@@ -109,7 +109,7 @@ func UploadUserPhoto(userId int64, photo []byte, logger logger.Logger) (err erro
 }
 
 func GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error) {
-	rows, err := DB.Query("select UserId, UserName, UserPhone from userInfo where userId = ?", userId)
+	rows, err := DB.Query("SELECT UserId, CASE WHEN LENGTH(UserName) = 0 OR UserName IS NULL THEN CONCAT('гость_', CONVERT(UserId, char)) ELSE UserName END AS UserName, UserPhone FROM userinfo where userId = ?", userId)
 	if err != nil {
 		logger.Log("ERROR", "GETUSERINFO", err.Error())
 		return model.User{Name: ""}, nil

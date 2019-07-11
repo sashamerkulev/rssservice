@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type User struct {
 	UserId int64
 	Name   string
@@ -25,18 +23,4 @@ type ArticleUser struct {
 	Article
 	ArticleActivity
 	ArticleUserActivity
-}
-
-func MakeSureNameExists(userInfo User) User {
-	if len(userInfo.Name) == 0 {
-		userInfo.Name = "Гость_" + fmt.Sprint(userInfo.UserId)
-	}
-	return userInfo
-}
-
-func MakeSureCommenterExists(userArticleComment UserArticleComment) UserArticleComment {
-	if len(userArticleComment.Name) == 0 {
-		userArticleComment.Name = "Гость_" + fmt.Sprint(userArticleComment.UserId)
-	}
-	return userArticleComment
 }

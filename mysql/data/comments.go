@@ -36,7 +36,9 @@ func AddComment(userId int64, articleId int64, comments string, logger logger.Lo
 func GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
 	comments = make([]model.UserArticleComment, 0)
 	rows, err := DB.Query(`SELECT * FROM (
-SELECT uac.CommentId, uac.ArticleId, uac.UserId, ui.UserName, uac.Comment, uac.Timestamp, uac.Status,
+SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
+CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
+uac.Comment, uac.Timestamp, uac.Status,
 (select max(ucl.timestamp) from userCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
 (SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
 (SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
@@ -92,7 +94,9 @@ func DeleteComment(userId int64, commentId int64, logger logger.Logger) (err err
 
 func GetComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
 	rows, err := DB.Query(`
-SELECT uac.CommentId, uac.ArticleId, uac.UserId, ui.UserName, uac.Comment, uac.Timestamp, uac.Status,
+SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
+CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
+uac.Comment, uac.Timestamp, uac.Status,
 (select max(ucl.timestamp) from userCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
 (SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
 (SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
