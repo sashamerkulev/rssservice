@@ -5,7 +5,7 @@ import (
 	"firebase.google.com/go/messaging"
 	"fmt"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/mysql/data"
+	"github.com/sashamerkulev/rssservice/mysql"
 	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 )
@@ -23,7 +23,7 @@ func SendNotificationLikeArticleComment(userName string, commentId int64, dislik
 		logger.Log("ERROR", "SENDNOTIFICATIONNEWARTICLESMESSAGE", err.Error())
 		return
 	}
-	firebaseToken, err := data.GetFirebaseIdByCommentId(commentId, logger)
+	firebaseToken, err := mysql.GetFirebaseIdByCommentId(commentId, logger)
 	if err != nil {
 		return
 	}

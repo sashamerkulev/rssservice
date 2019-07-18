@@ -1,3 +1,5 @@
+use dbnews;
+
 create table article(
   ArticleId   bigint auto_increment primary key,
   SourceName  mediumtext not null,

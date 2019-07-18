@@ -1,8 +1,18 @@
 package domain
 
-import "github.com/sashamerkulev/rssservice/logger"
+import (
+	"github.com/sashamerkulev/rssservice/logger"
+	"github.com/sashamerkulev/rssservice/reader"
+)
+
+type SetupSourcesRepository interface {
+	GetSources() ([]reader.Link, error)
+}
 
 type SetupSources struct {
 	Logger     logger.Logger
-	Repository MainRepository
+}
+
+func (ss SetupSources) GetSources() ([]reader.Link, error) {
+	return reader.Urls, nil
 }

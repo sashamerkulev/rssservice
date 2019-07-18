@@ -4,7 +4,7 @@ import (
 	"github.com/sashamerkulev/rssservice/controllers"
 	"github.com/sashamerkulev/rssservice/domain"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/mysql/data"
+	"github.com/sashamerkulev/rssservice/mysql"
 	"github.com/sashamerkulev/rssservice/reader"
 	"time"
 )
@@ -14,7 +14,7 @@ var repository domain.MainRepository
 func read(logger logger.Logger) {
 	ticker := time.NewTicker(time.Minute * 15)
 	for _ = range ticker.C {
-		reader.Do(data.AddArticles, logger)
+		reader.Do(mysql.AddArticles, logger)
 	}
 }
 
@@ -23,13 +23,13 @@ func wipe(logger logger.Logger) {
 	for _ = range ticker.C {
 		wipeTime := time.Now()
 		wipeTime = wipeTime.Add(-12 * time.Hour)
-		data.WipeOldActivities(wipeTime, logger)
-		data.WipeOldArticles(wipeTime, logger)
+		mysql.WipeOldActivities(wipeTime, logger)
+		mysql.WipeOldArticles(wipeTime, logger)
 	}
 }
 
 func main() {
-	repository = data.MainRepositoryImpl{}
+	repository = mysql.MainRepositoryImpl{}
 	err := repository.Open()
 	if err != nil {
 		var log = logger.ConsoleLogger{}

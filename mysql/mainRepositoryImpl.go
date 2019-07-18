@@ -1,12 +1,10 @@
-package data
+package mysql
 
 import (
 	"database/sql"
-	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/reader"
-	"time"
 )
 
 type MainRepositoryImpl struct {
@@ -47,16 +45,4 @@ func (MainRepositoryImpl) GetUserIdByToken(token string) (int64, error) {
 
 func (MainRepositoryImpl) GetSources() ([]reader.Link, error) {
 	return reader.Urls, nil
-}
-
-func (ul UserDbLogger) Log(severity string, tag string, message string) {
-	go dbLog(ul.DB, severity, fmt.Sprint(ul.UserId), ul.UserIP, tag, message)
-}
-
-func dbLog(DB *sql.DB, severity string, userId string, userIp string, tag string, message string) {
-	_, err := DB.Exec("INSERT INTO log(Severity, UserId, UserIP, Timestamp, Tag, Message) VALUES(?,?,?,?,?,?)", severity, userId, userIp, time.Now(), tag, message)
-	if err != nil {
-		logger.ConsoleLog(severity, userId, userIp, tag, message)
-		logger.ConsoleLog(severity, userId, userIp, "DBLOGGER", err.Error())
-	}
 }

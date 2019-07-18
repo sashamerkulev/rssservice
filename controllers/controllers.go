@@ -57,20 +57,23 @@ func Init(_repository domain.MainRepository) {
 	r.HandleFunc("/articles/{articleId}/dislike", articlesDislikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/{articleId}/comments", articlesCommentsHandler).Methods("GET")
 	r.HandleFunc("/articles/{articleId}/comments", articlesAddCommentsHandler).Methods("POST")
+
+	r.HandleFunc("/articles/comments", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/articles/comments/{commentId}", articlesDeleteCommentsHandler).Methods("DELETE")
 	r.HandleFunc("/articles/comments/{commentId}/like", articlesCommentsLikeHandler).Methods("PUT")
 	r.HandleFunc("/articles/comments/{commentId}/dislike", articlesCommentsDislikeHandler).Methods("PUT")
+
+	r.HandleFunc("/setup", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/setup/register", setupRegisterHandler).Methods("POST")
-	r.HandleFunc("/setup/sources", setupSourcesHandler).Methods("GET")
 	r.HandleFunc("/setup/firebase", setupFirebaseHandler).Methods("POST")
+	r.HandleFunc("/setup/sources", setupSourcesHandler).Methods("GET")
+
 	r.HandleFunc("/users", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
 	r.HandleFunc("/users/info", userInfoHandler).Methods("GET")
 	r.HandleFunc("/users/update", usersUpdateHandler).Methods("PUT")
 	r.HandleFunc("/users/uploadPhoto", usersUploadPhotoHandler).Methods("PUT")
 	r.HandleFunc("/users/downloadPhoto", authorisedUserDownloadPhotoHandler).Methods("GET")
 	r.HandleFunc("/users/{userId}/downloadPhoto", userDownloadPhotoHandler).Methods("GET")
-	err := http.ListenAndServe(":9000", r)
-	if err != nil {
-		repository.GetLogger(-1, "").Log("ERROR", "INIT", err.Error())
-	}
+
+	panic(http.ListenAndServe(":9000", r))
 }

@@ -25,14 +25,13 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		datetime = domain.StringToDate("")
 	}
-
-	au := domain.UserArticles{
+	userArticles := domain.UserArticles{
 		LastTime:   datetime,
 		Logger:     logger,
 		UserId:     getAuthorizationToken(r),
-		Repository: mysql.UserArticlesRepositoryImpl{},
+		Repository: mysql.UserArticlesRepositoryImpl{DB: mysql.DB},
 	}
-	articles, err := au.GetUserArticles()
+	articles, err := userArticles.GetUserArticles()
 	if err != nil {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -47,13 +46,13 @@ func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	articleUser, err := prepareArticleActivity(logger, r)
+	userArticle, err := prepareUserArticle(logger, r)
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	article, err := articleUser.Like()
+	article, err := userArticle.Like()
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -68,13 +67,13 @@ func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	articleUser, err := prepareArticleActivity(logger, r)
+	userArticle, err := prepareUserArticle(logger, r)
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	article, err := articleUser.Dislike()
+	article, err := userArticle.Dislike()
 	if err != nil {
 		logger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -89,13 +88,13 @@ func articleHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		return
 	}
-	articleUser, err := prepareArticleActivity(logger, r)
+	userArticle, err := prepareUserArticle(logger, r)
 	if err != nil {
 		logger.Log("ERROR", "articleLikeHandler", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	article, err := articleUser.GetUserArticle()
+	article, err := userArticle.GetUserArticle()
 	if err != nil {
 		logger.Log("ERROR", "articleLikeHandler", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
@@ -105,9 +104,10 @@ func articleHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(article)
 }
 
-func prepareArticleActivity(logger logger.Logger, r *http.Request) (domain.UserArticle, error) {
+func prepareUserArticle(logger logger.Logger, r *http.Request) (domain.UserArticle, error) {
 	vars := mux.Vars(r)
 	articleId := vars["articleId"]
 	id, err := strconv.ParseInt(articleId, 10, 64)
-	return domain.UserArticle{ArticleId: id, UserId: getAuthorizationToken(r), Logger: logger, Repository: mysql.UserArticleRepositoryImpl{}}, err
+	return domain.UserArticle{ArticleId: id, UserId: getAuthorizationToken(r), Logger: logger,
+		Repository: mysql.UserArticleRepositoryImpl{DB: mysql.DB}}, err
 }

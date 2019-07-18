@@ -1,48 +1,13 @@
 package controllers
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sashamerkulev/rssservice/domain"
-	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
 	"github.com/sashamerkulev/rssservice/mysql"
 	"net/http"
 	"strconv"
 )
-
-func finishUserResponse(w http.ResponseWriter, user model.User, err error, logger logger.Logger) {
-	if err != nil {
-		logger.Log("ERROR", "FINISH", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(user)
-}
-
-func usersUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
-		return
-	}
-	name := r.Form.Get("name")
-	phone := r.Form.Get("phone")
-	var ur = domain.UserUpdate{Phone: phone, Name: name, Logger: logger, UserId: getAuthorizationToken(r), Repository: mysql.UserUpdateRepositoryImpl{}}
-	user, err := ur.UpdateUser()
-	finishUserResponse(w, user, err, logger)
-}
-
-func userInfoHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
-		return
-	}
-	var ur = domain.UserInfo{Logger: logger, UserId: getAuthorizationToken(r), Repository: mysql.UserInfoRepositoryImpl{}}
-	user, err := ur.GetUserInfo()
-	finishUserResponse(w, user, err, logger)
-}
 
 func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -86,7 +51,6 @@ func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	//w.WriteHeader(http.StatusOK)
 	var ur = domain.UserInfo{Logger: logger, UserId: userId, Repository: mysql.UserInfoRepositoryImpl{}}
 	user, err := ur.GetUserInfo()
 	finishUserResponse(w, user, err, logger)
@@ -100,7 +64,8 @@ func authorisedUserDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) 
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	var ur = domain.UserPhoto{Logger: logger, UserId: getAuthorizationToken(r), Repository: mysql.UserPhotoUploadRepositoryImpl{}}
+	var ur = domain.UserPhoto{Logger: logger, UserId: getAuthorizationToken(r),
+		Repository: mysql.UserPhotoUploadRepositoryImpl{DB: mysql.DB}}
 	bytes, err := ur.GetUserPhoto()
 	w.Header().Add("Content-Type", "image/png")
 	w.Header().Add("Content-Length", strconv.Itoa(len(bytes)))
@@ -127,15 +92,14 @@ func userDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-
 	vars := mux.Vars(r)
 	var userId2 int64
 	userId2Par := vars["userId"]
 	if userId2Par != "" {
 		userId2, _ = strconv.ParseInt(userId2Par, 10, 64)
 	}
-
-	var ur = domain.UserPhoto{Logger: logger, UserId: userId2, Repository: mysql.UserPhotoUploadRepositoryImpl{}}
+	var ur = domain.UserPhoto{Logger: logger, UserId: userId2,
+		Repository: mysql.UserPhotoUploadRepositoryImpl{DB: mysql.DB}}
 	bytes, err := ur.GetUserPhoto()
 	w.Header().Add("Content-Type", "image/png")
 	w.Header().Add("Content-Length", strconv.Itoa(len(bytes)))
