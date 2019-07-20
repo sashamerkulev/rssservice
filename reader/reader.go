@@ -18,7 +18,7 @@ type Link struct {
 
 var Urls = []Link{
 	{Link: "http://lenta.ru/rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "lenta", Title: "Лента"},
-	{Link: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/mainnews.rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "rbc", Title: "РБК"},
+	//{Link: "http://static.feed.rbc.ru/rbc/internal/rss.rbc.ru/rbc.ru/mainnews.rss", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "rbc", Title: "РБК"},
 	{Link: "http://worldoftanks.ru/ru/rss/news/", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "wot", Title: "World of Tanks"},
 	{Link: "https://topwar.ru/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "topwar", Title: "Topwar"},
 	{Link: "http://www.interfax.ru/rss.asp", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "interfax", Title: "Интерфакс"}, // Fri, 8 Mar 2019 13:58:00 +0300
@@ -44,7 +44,7 @@ var Urls = []Link{
 	{Link: "https://www.sport-express.ru/services/materials/news/se/", Layout: time.RFC1123Z, Name: "sportexpress", Title: "Спорт-Экспресс"},
 	{Link: "http://dp.ru/rss", Layout: time.RFC1123Z, Name: "dp", Title: "Деловой Петербург"},
 	{Link: "https://sdelanounas.ru/index/rss/", Layout: time.RFC1123Z, Name: "sdelanounas", Title: "Сделано у нас"},
-	{Link:"http://www.rosbalt.ru/feed/", Layout: time.RFC1123Z, Name: "rosbalt", Title: "Росбалт"},
+	//{Link:"http://www.rosbalt.ru/feed/", Layout: time.RFC1123Z, Name: "rosbalt", Title: "Росбалт"},
 	//{Link:"http://feeds.feedburner.com/iarex/?utm_source=social-icons&utm_medium=cpc&utm_campaign=web", Layout: time.RFC1123Z, Name: "iarex", Title: "ИА REX"},
 }
 

@@ -70,6 +70,11 @@ func authorisedUserDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) 
 	w.Header().Add("Content-Type", "image/png")
 	w.Header().Add("Content-Length", strconv.Itoa(len(bytes)))
 	w.Header().Add("filename", fmt.Sprint(ur.UserId)+".png")
+	if err != nil {
+		logger.Log("ERROR", "USERSDOWNLOADPHOTOHANDLER", err.Error())
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	n, err := w.Write(bytes)
 	if err != nil {
@@ -104,6 +109,11 @@ func userDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "image/png")
 	w.Header().Add("Content-Length", strconv.Itoa(len(bytes)))
 	w.Header().Add("filename", fmt.Sprint(ur.UserId)+".png")
+	if err != nil {
+		logger.Log("ERROR", "USERSDOWNLOADPHOTOHANDLER", err.Error())
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	n, err := w.Write(bytes)
 	if err != nil {

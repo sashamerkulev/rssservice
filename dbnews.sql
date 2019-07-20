@@ -28,6 +28,7 @@ create table userInfo(
   UserName mediumtext,
   UserPhone mediumtext
 );
+create unique index index_userInfo_Names on userInfo(UserName(100));
 
 create table userDevices(
   UserId bigint not null,

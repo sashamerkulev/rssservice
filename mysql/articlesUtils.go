@@ -34,10 +34,6 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 	}
 }
 
-func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
-
-}
-
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 	result, err := DB.Exec("DELETE FROM Article WHERE "+
 		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId "+
@@ -54,4 +50,8 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 		return
 	}
 	logger.Log("DEBUG", "WIPE", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
+}
+
+func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
+
 }

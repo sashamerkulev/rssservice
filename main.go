@@ -18,13 +18,21 @@ func read(logger logger.Logger) {
 	}
 }
 
-func wipe(logger logger.Logger) {
-	ticker := time.NewTicker(time.Hour * 12)
+func wipeArticles(logger logger.Logger) {
+	ticker := time.NewTicker(time.Hour * 24)
 	for _ = range ticker.C {
 		wipeTime := time.Now()
-		wipeTime = wipeTime.Add(-12 * time.Hour)
-		mysql.WipeOldActivities(wipeTime, logger)
+		wipeTime = wipeTime.Add(-24 * 3 * time.Hour)
 		mysql.WipeOldArticles(wipeTime, logger)
+	}
+}
+
+func wipeActivities(logger logger.Logger) {
+	ticker := time.NewTicker(time.Hour * 24)
+	for _ = range ticker.C {
+		wipeTime := time.Now()
+		wipeTime = wipeTime.Add(-24 * 14 * time.Hour)
+		mysql.WipeOldActivities(wipeTime, logger)
 	}
 }
 
@@ -39,6 +47,7 @@ func main() {
 	defer repository.Close()
 	var log = repository.GetLogger(-1, "")
 	go read(log)
-	go wipe(log)
+	go wipeArticles(log)
+	go wipeActivities(log)
 	controllers.Init(repository)
 }
