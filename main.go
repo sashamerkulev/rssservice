@@ -22,7 +22,7 @@ func wipeArticles(logger logger.Logger) {
 	ticker := time.NewTicker(time.Hour * 24)
 	for _ = range ticker.C {
 		wipeTime := time.Now()
-		wipeTime = wipeTime.Add(-24 * 3 * time.Hour)
+		wipeTime = wipeTime.Add(-24 * 7 * time.Hour)
 		mysql.WipeOldArticles(wipeTime, logger)
 	}
 }
@@ -31,7 +31,7 @@ func wipeActivities(logger logger.Logger) {
 	ticker := time.NewTicker(time.Hour * 24)
 	for _ = range ticker.C {
 		wipeTime := time.Now()
-		wipeTime = wipeTime.Add(-24 * 14 * time.Hour)
+		wipeTime = wipeTime.Add(-24 * 30 * time.Hour)
 		mysql.WipeOldActivities(wipeTime, logger)
 	}
 }

@@ -41,17 +41,27 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
 		"AND PubDate <= ?", wipeTime)
 	if err != nil {
-		logger.Log("ERROR", "WIPE", err.Error())
+		logger.Log("ERROR", "WIPEOLDARTICLES", err.Error())
 		return
 	}
 	deleted, err := result.RowsAffected()
 	if err != nil {
-		logger.Log("ERROR", "WIPE", err.Error())
+		logger.Log("ERROR", "WIPEOLDARTICLES", err.Error())
 		return
 	}
-	logger.Log("DEBUG", "WIPE", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
+	logger.Log("DEBUG", "WIPEOLDARTICLES", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
 }
 
 func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
-
+	result, err := DB.Exec("DELETE FROM Article WHERE PubDate <= ?", wipeTime)
+	if err != nil {
+		logger.Log("ERROR", "WIPEOLDACTIVITIES", err.Error())
+		return
+	}
+	deleted, err := result.RowsAffected()
+	if err != nil {
+		logger.Log("ERROR", "WIPEOLDACTIVITIES", err.Error())
+		return
+	}
+	logger.Log("DEBUG", "WIPEOLDACTIVITIES", "Rows ("+fmt.Sprint(deleted)+") was deleted at "+wipeTime.Format(time.RFC3339))
 }

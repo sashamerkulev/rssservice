@@ -34,7 +34,7 @@ create table userDevices(
   UserId bigint not null,
   DeviceId mediumtext not null,
   FirebaseId mediumtext not null,
-  FOREIGN KEY (UserId) REFERENCES userInfo(UserId)
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId) ON DELETE CASCADE
 );
 create unique index index_userDevices on userDevices(UserId, DeviceId(100));
 
@@ -43,7 +43,7 @@ create table userDeviceToken(
   DeviceId mediumtext not null,
   Timestamp datetime not null,
   Token mediumtext not null,
-  FOREIGN KEY (UserId) REFERENCES userInfo(UserId)
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId) ON DELETE CASCADE
 );
 create unique index index_userDeviceToken on userDeviceToken(UserId, DeviceId(100), Timestamp);
 
@@ -52,8 +52,8 @@ create table userArticleLikes(
   ArticleId   bigint not null,
   Dislike bool not null,
   Timestamp datetime not null,
-  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
-  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId) ON DELETE CASCADE,
+  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId) ON DELETE CASCADE
 );
 create unique index index_userArticleLikes on userArticleLikes(UserId, ArticleId);
 create index index_userArticleLikes_timestamp on userArticleLikes(Timestamp);
@@ -65,8 +65,8 @@ create table userArticleComments(
   Timestamp datetime not null,
   Comment  mediumtext not null,
   Status int not null,
-  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
-  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId)
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId) ON DELETE CASCADE,
+  FOREIGN KEY (ArticleId) REFERENCES article(ArticleId) ON DELETE CASCADE
 );
 create unique index index_userArticleComments on userArticleComments(UserId, ArticleId, Timestamp);
 create index index_userArticleComments_timestamp on userArticleComments(Timestamp);
@@ -76,8 +76,8 @@ create table userCommentLikes(
   CommentId   bigint not null,
   Dislike bool not null,
   Timestamp datetime not null,
-  FOREIGN KEY (UserId) REFERENCES userInfo(UserId),
-  FOREIGN KEY (CommentId) REFERENCES userarticlecomments(CommentId)
+  FOREIGN KEY (UserId) REFERENCES userInfo(UserId) ON DELETE CASCADE,
+  FOREIGN KEY (CommentId) REFERENCES userarticlecomments(CommentId) ON DELETE CASCADE
 );
 create unique index index_userCommentLikes on userCommentLikes(UserId, CommentId);
 create index index_userCommentLikes_timestamp on userCommentLikes(Timestamp);
