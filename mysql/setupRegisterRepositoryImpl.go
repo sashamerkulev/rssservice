@@ -44,7 +44,7 @@ func (db SetupRegisterRepositoryImpl) RegisterUser(deviceId string, firebaseId s
 		return -1, errors.TransactionOpenError
 	}
 	defer tx.Commit()
-	result, err := db.DB.Exec("insert into userInfo(UserName, UserPhone) values(?,?)", "", "")
+	result, err := db.DB.Exec("insert into userInfo(UserName, UserPhone) values(?,?)", nil, nil)
 	if err != nil {
 		tx.Rollback()
 		logger.Log("ERROR", "REGISTERUSER", err.Error())
