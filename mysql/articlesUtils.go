@@ -53,7 +53,20 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 }
 
 func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
-	result, err := DB.Exec("DELETE FROM Article WHERE PubDate <= ?", wipeTime)
+	result, err := DB.Exec(`DELETE FROM Article WHERE ArticleId in ( 
+select b.articleId
+from (
+select a.articleId, max(coalesce(uac.timestamp, a.pubdate)) as timestamp
+from article a
+left join userarticlecomments uac on uac.articleId = a.articleId
+group by a.ArticleId
+union
+select a.articleId, max(coalesce(uac.timestamp, a.pubdate)) as timestamp
+from article a
+left join userarticlelikes uac on uac.articleId = a.articleId
+group by a.ArticleId
+) b WHERE b.timestamp < ?)
+`, wipeTime)
 	if err != nil {
 		logger.Log("ERROR", "WIPEOLDACTIVITIES", err.Error())
 		return
