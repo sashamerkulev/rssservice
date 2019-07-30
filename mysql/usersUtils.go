@@ -9,7 +9,7 @@ func GetUserIdByToken(userToken string) (userId int64, err error) {
 	if len(userToken) == 0 {
 		return -1, nil
 	}
-	rows, err := DB.Query("select userId from userDeviceToken WHERE token = ?", userToken)
+	rows, err := DB.Query("select userId from userDeviceTokens WHERE token = ?", userToken)
 	if err != nil {
 		return -1, errors.UserNotFoundError
 	}
@@ -25,7 +25,7 @@ func GetUserIdByToken(userToken string) (userId int64, err error) {
 }
 
 func GetFirebaseIdByCommentId(commentId int64, logger logger.Logger) (string, error) {
-	rows, err := DB.Query("select ud.FirebaseId from usercommentlikes ucl	join userdevices ud on ucl.userId = ud.userId " +
+	rows, err := DB.Query("select ud.FirebaseId from articleCommentLikes ucl	join userdevices ud on ucl.userId = ud.userId " +
 		" where ucl.commentId = ?", commentId)
 	if err != nil {
 		logger.Log("ERROR", "GETUSERINFO", err.Error())

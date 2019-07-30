@@ -12,7 +12,7 @@ type SetupRegisterRepositoryImpl struct {
 }
 
 func (db SetupRegisterRepositoryImpl) FindUserIdByDeviceId(deviceId string, logger logger.Logger) (userId int64, err error) {
-	rows, err := db.DB.Query("select userId from userDeviceToken WHERE deviceId = ?", deviceId)
+	rows, err := db.DB.Query("select userId from userDeviceTokens WHERE deviceId = ?", deviceId)
 	if err != nil {
 		logger.Log("ERROR", "FINDUSERIDBYDEVICEID", err.Error())
 		return -1, errors.UserNotFoundError
@@ -29,7 +29,7 @@ func (db SetupRegisterRepositoryImpl) FindUserIdByDeviceId(deviceId string, logg
 }
 
 func (db SetupRegisterRepositoryImpl) AddTokenForUserIdAndDeviceId(userId int64, deviceId string, token string, logger logger.Logger) error {
-	_, err := db.DB.Exec("insert into userDeviceToken(userId, deviceId, timestamp, token) values(?,?,?,?)", userId, deviceId, time.Now(), token)
+	_, err := db.DB.Exec("insert into userDeviceTokens(userId, deviceId, timestamp, token) values(?,?,?,?)", userId, deviceId, time.Now(), token)
 	if err != nil {
 		logger.Log("ERROR", "ADDTOKENFORUSERIDANDDEVICEID", err.Error())
 		return errors.UserRegistrationError
@@ -44,7 +44,7 @@ func (db SetupRegisterRepositoryImpl) RegisterUser(deviceId string, firebaseId s
 		return -1, errors.TransactionOpenError
 	}
 	defer tx.Commit()
-	result, err := db.DB.Exec("insert into userInfo(UserName, UserPhone) values(?,?)", nil, nil)
+	result, err := db.DB.Exec("insert into users(UserName, UserPhone) values(?,?)", nil, nil)
 	if err != nil {
 		tx.Rollback()
 		logger.Log("ERROR", "REGISTERUSER", err.Error())
@@ -76,7 +76,7 @@ func (db SetupRegisterRepositoryImpl) UpdateFirebaseId(userId int64, setupId str
 }
 
 func addTokenForUserIdAndDeviceId(DB *sql.DB, userId int64, deviceId string, userToken string, logger logger.Logger) error {
-	_, err := DB.Exec("insert into userDeviceToken(userId, deviceId, timestamp, token) values(?,?,?,?)", userId, deviceId, time.Now(), userToken)
+	_, err := DB.Exec("insert into userDeviceTokens(userId, deviceId, timestamp, token) values(?,?,?,?)", userId, deviceId, time.Now(), userToken)
 	if err != nil {
 		logger.Log("ERROR", "ADDTOKENFORUSERIDANDDEVICEID", err.Error())
 		return errors.UserRegistrationError

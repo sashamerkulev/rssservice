@@ -14,7 +14,7 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 		logger.Log("ERROR", "ADDARTICLES", err.Error())
 		return
 	}
-	insertStmt, err := DB.Prepare("INSERT INTO article(SourceName, Title, Link, Description, PubDate, Category, PictureUrl) VALUES(?,?,?,?,?,?,?)")
+	insertStmt, err := DB.Prepare("INSERT INTO articles(SourceName, Title, Link, Description, PubDate, Category, PictureUrl) VALUES(?,?,?,?,?,?,?)")
 	if err != nil {
 		logger.Log("ERROR", "ADDARTICLES", err.Error())
 		tx.Rollback()
@@ -35,10 +35,10 @@ func AddArticles(articles []model.Article, logger logger.Logger) {
 }
 
 func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
-	result, err := DB.Exec("DELETE FROM Article WHERE "+
-		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM Article a1 JOIN UserArticleLikes ual on ual.ArticleId = a1.ArticleId "+
+	result, err := DB.Exec("DELETE FROM articles WHERE "+
+		"ArticleId not in (SELECT * FROM (SELECT a1.ArticleId FROM articles a1 JOIN articleLikes ual on ual.ArticleId = a1.ArticleId "+
 		" UNION "+
-		" SELECT a1.ArticleId FROM Article a1 JOIN UserArticleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
+		" SELECT a1.ArticleId FROM articles a1 JOIN articleComments uac on uac.ArticleId = a1.ArticleId) as art) "+
 		"AND PubDate <= ?", wipeTime)
 	if err != nil {
 		logger.Log("ERROR", "WIPEOLDARTICLES", err.Error())
@@ -53,17 +53,17 @@ func WipeOldArticles(wipeTime time.Time, logger logger.Logger) {
 }
 
 func WipeOldActivities(wipeTime time.Time, logger logger.Logger) {
-	result, err := DB.Exec(`DELETE FROM Article WHERE ArticleId in ( 
+	result, err := DB.Exec(`DELETE FROM articles WHERE ArticleId in ( 
 select b.articleId
 from (
 select a.articleId, max(coalesce(uac.timestamp, a.pubdate)) as timestamp
-from article a
-left join userarticlecomments uac on uac.articleId = a.articleId
+from articles a
+left join articleComments uac on uac.articleId = a.articleId
 group by a.ArticleId
 union
 select a.articleId, max(coalesce(uac.timestamp, a.pubdate)) as timestamp
-from article a
-left join userarticlelikes uac on uac.articleId = a.articleId
+from articles a
+left join articleLikes uac on uac.articleId = a.articleId
 group by a.ArticleId
 ) b WHERE b.timestamp < ?)
 `, wipeTime)

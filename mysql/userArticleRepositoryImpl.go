@@ -14,17 +14,17 @@ type UserArticleRepositoryImpl struct {
 }
 
 func (db UserArticleRepositoryImpl) LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("insert into userArticleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, false, time.Now())
+	_, err := db.DB.Exec("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, false, time.Now())
 	return err
 }
 
 func (db UserArticleRepositoryImpl) DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("insert into userArticleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, true, time.Now())
+	_, err := db.DB.Exec("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, true, time.Now())
 	return err
 }
 
 func (db UserArticleRepositoryImpl) FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger) (bool, error) {
-	rows, err := db.DB.Query("select dislike from userArticleLikes WHERE userId = ? and articleId = ?", userId, articleId)
+	rows, err := db.DB.Query("select dislike from articleLikes WHERE userId = ? and articleId = ?", userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "FINDUSERARTICLE", err.Error())
 		return false, errors.ArticleNotFoundError
@@ -42,28 +42,28 @@ func (db UserArticleRepositoryImpl) FindUserArticleDislike(userId int64, article
 }
 
 func (db UserArticleRepositoryImpl) SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error {
-	_, err := db.DB.Exec("update userArticleLikes set dislike = ?, timestamp = ? where userId=? and articleId = ?", dislike, time.Now(), userId, articleId)
+	_, err := db.DB.Exec("update articleLikes set dislike = ?, timestamp = ? where userId=? and articleId = ?", dislike, time.Now(), userId, articleId)
 	return err
 }
 
 func (db UserArticleRepositoryImpl) RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("delete from userArticleLikes where userId=? and articleId = ?", userId, articleId)
+	_, err := db.DB.Exec("delete from articleLikes where userId=? and articleId = ?", userId, articleId)
 	return err
 }
 
 func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
 	rows, err := db.DB.Query(`select a.*, 
-		 (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
-		 (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
-		 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId 
+		 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
+		 (select max(uac.timestamp) from articleComments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
+		 	(select max(ucl.timestamp) from articleComments uac join articleCommentLikes ucl on ucl.commentId = uac.commentId 
 		 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, 
-		 (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, 
-		 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, 
-		 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, 
-		 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, 
-		 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
-		 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
-		 		from article a 
+		 (select count(*) from articleLikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, 
+		 	(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, 
+		 	(select count(*) from articleComments aa where aa.articleId = a.articleId) as comments, 
+		 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, 
+		 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
+		 		(select count(*) from articleComments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
+		 		from articles a 
 		 		where a.articleId = ?`,
 		userId, userId, userId, articleId)
 	if err != nil {

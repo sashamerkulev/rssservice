@@ -12,7 +12,7 @@ func (ul UserDbLogger) Log(severity string, tag string, message string) {
 }
 
 func dbLog(DB *sql.DB, severity string, userId string, userIp string, tag string, message string) {
-	_, err := DB.Exec("INSERT INTO log(Severity, UserId, UserIP, Timestamp, Tag, Message) VALUES(?,?,?,?,?,?)", severity, userId, userIp, time.Now(), tag, message)
+	_, err := DB.Exec("INSERT INTO logs(Severity, UserId, UserIP, Timestamp, Tag, Message) VALUES(?,?,?,?,?,?)", severity, userId, userIp, time.Now(), tag, message)
 	if err != nil {
 		logger.ConsoleLog(severity, userId, userIp, tag, message)
 		logger.ConsoleLog(severity, userId, userIp, "DBLOGGER", err.Error())

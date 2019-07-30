@@ -17,17 +17,17 @@ func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time
 	results := make([]model.ArticleUser, 0)
 	currentTime := time.Now()
 	rows, err := db.DB.Query(`select * from (select a.*, 
-			 (select max(ual.timestamp) from userarticlelikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
-			 (select max(uac.timestamp) from userarticlecomments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
-			 	(select max(ucl.timestamp) from userarticlecomments uac join usercommentlikes ucl on ucl.commentId = uac.commentId 
+			 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
+			 (select max(uac.timestamp) from articleComments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
+			 	(select max(ucl.timestamp) from articleComments uac join articleCommentLikes ucl on ucl.commentId = uac.commentId 
 			 	where uac.articleId = a.articleId ) as lastUserLikeCommentActivity, 
-			 (select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, 
-			 	(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, 
-			 	(select count(*) from userarticlecomments aa where aa.articleId = a.articleId) as comments, 
-			 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, 
-			 		(select count(*) from userarticlelikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
-			 		(select count(*) from userarticlecomments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
-			 		from article a) b
+			 (select count(*) from articleLikes aa where aa.articleId = a.articleId and aa.dislike) as dislikes, 
+			 	(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike) as likes, 
+			 	(select count(*) from articleComments aa where aa.articleId = a.articleId) as comments, 
+			 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and aa.dislike and aa.userid = ?) as userdislike, 
+			 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
+			 		(select count(*) from articleComments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
+			 		from articles a) b
 			 		where (b.PubDate >= ? and b.PubDate < ? or (b.lastUserLikeActivity >= ? or b.lastUserCommentActivity >= ? or b.lastUserLikeCommentActivity >= ?)) `,
 		userId, userId, userId, lastTime, currentTime, lastTime, lastTime, lastTime)
 	if err != nil {

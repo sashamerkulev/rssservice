@@ -21,15 +21,15 @@ func (db ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64
 SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
 CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
 uac.Comment, uac.Timestamp, uac.Status,
-(select max(ucl.timestamp) from userCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike AND ucl.UserId = ?) as userlike,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike AND ucl.UserId = ?) as userdislike,
+(select max(ucl.timestamp) from articleCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike AND ucl.UserId = ?) as userlike,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike AND ucl.UserId = ?) as userdislike,
 uac.UserId = ? as Owner
-FROM dbnews.userarticlecomments uac
-JOIN userInfo ui on ui.userId = uac.userId
-JOIN article a on a.articleId = uac.articleId) b
+FROM articleComments uac
+JOIN users ui on ui.userId = uac.userId
+JOIN articles a on a.articleId = uac.articleId) b
 WHERE b.articleId = ? AND (b.Timestamp >= ? or (b.lastActivityDate >= ?))
 ;
 `, userId, userId, userId, articleId, lastArticleReadDate, lastArticleReadDate)
@@ -65,7 +65,7 @@ func (db ArticleCommentRepositoryImpl) AddComment(userId int64, articleId int64,
 		return
 	}
 	defer tx.Commit()
-	res, err := db.DB.Exec("INSERT INTO userArticleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?)", userId, articleId, time.Now(), comments, 0)
+	res, err := db.DB.Exec("INSERT INTO articleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?)", userId, articleId, time.Now(), comments, 0)
 	if err != nil {
 		logger.Log("ERROR", "ADDCOMMENT", "userId="+fmt.Sprint(userId))
 		logger.Log("ERROR", "ADDCOMMENT", err.Error())
@@ -89,7 +89,7 @@ func (db ArticleCommentRepositoryImpl) DeleteComment(userId int64, commentId int
 		return
 	}
 	defer tx.Commit()
-	_, err = db.DB.Exec("DELETE FROM userArticleComments where commentId =?", commentId)
+	_, err = db.DB.Exec("DELETE FROM articleComments where commentId =?", commentId)
 	if err != nil {
 		logger.Log("ERROR", "DELETECOMMENT", err.Error())
 		tx.Rollback()
@@ -104,15 +104,15 @@ func (db ArticleCommentRepositoryImpl) GetComment(userId int64, commentId int64,
 SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
 CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
 uac.Comment, uac.Timestamp, uac.Status,
-(select max(ucl.timestamp) from userCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike AND ucl.UserId = ?) as userlike,
-(SELECT COUNT(*) from userCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike AND ucl.UserId = ?) as userdislike,
+(select max(ucl.timestamp) from articleCommentLikes ucl where ucl.CommentId = uac.CommentId ) as lastActivityDate, 
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike) as Likes,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike) as Dislikes,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND NOT ucl.Dislike AND ucl.UserId = ?) as userlike,
+(SELECT COUNT(*) from articleCommentLikes ucl WHERE ucl.CommentId = uac.CommentId AND ucl.Dislike AND ucl.UserId = ?) as userdislike,
 uac.UserId = ? as Owner
-FROM dbnews.userarticlecomments uac
-JOIN userInfo ui on ui.userId = uac.userId
-JOIN article a on a.articleId = uac.articleId
+FROM articleComments uac
+JOIN users ui on ui.userId = uac.userId
+JOIN articles a on a.articleId = uac.articleId
 WHERE uac.CommentId = ?
 ;
 `, userId, userId, userId, commentId)
@@ -139,7 +139,7 @@ WHERE uac.CommentId = ?
 }
 
 func (db ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentId int64, logger logger.Logger) (bool, error) {
-	rows, err := db.DB.Query("select dislike from usercommentlikes WHERE userId = ? and commentId = ?", userId, commentId)
+	rows, err := db.DB.Query("select dislike from articleCommentLikes WHERE userId = ? and commentId = ?", userId, commentId)
 	if err != nil {
 		logger.Log("ERROR", "FINDCOMMENTDISLIKE", err.Error())
 		return false, errors.CommentNotFoundError
@@ -157,21 +157,21 @@ func (db ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentI
 }
 
 func (db ArticleCommentRepositoryImpl) SetUserCommentDislikeTo(userId int64, commentId int64, dislike bool, logger logger.Logger) error {
-	_, err := db.DB.Exec("update usercommentlikes set dislike = ?, timestamp = ? where userId=? and commentId = ?", dislike, time.Now(), userId, commentId)
+	_, err := db.DB.Exec("update articleCommentLikes set dislike = ?, timestamp = ? where userId=? and commentId = ?", dislike, time.Now(), userId, commentId)
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) RemoveCommentDislike(userId int64, commentId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("delete from usercommentlikes where userId=? and commentId = ?", userId, commentId)
+	_, err := db.DB.Exec("delete from articleCommentLikes where userId=? and commentId = ?", userId, commentId)
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) LikeComment(userId int64, commentId int64, logger logger.Logger) (err error) {
-	_, err = db.DB.Exec("insert into usercommentlikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, false, time.Now())
+	_, err = db.DB.Exec("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, false, time.Now())
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) DislikeComment(userId int64, commentId int64, logger logger.Logger) (err error) {
-	_, err = db.DB.Exec("insert into usercommentlikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, true, time.Now())
+	_, err = db.DB.Exec("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, true, time.Now())
 	return err
 }

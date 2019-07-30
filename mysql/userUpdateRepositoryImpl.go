@@ -11,7 +11,7 @@ type UserUpdateRepositoryImpl struct {
 }
 
 func (db UserUpdateRepositoryImpl) UpdateUser(userId int64, name string, phone string, logger logger.Logger) error {
-	_, err := db.DB.Exec("update userInfo set UserName=?, UserPhone=? where userId = ?", name, phone, userId)
+	_, err := db.DB.Exec("update users set UserName=?, UserPhone=? where userId = ?", name, phone, userId)
 	if err != nil {
 		logger.Log("ERROR", "UPDATEUSER", err.Error())
 		return errors.UserUpdateError
