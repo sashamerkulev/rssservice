@@ -29,4 +29,3 @@ func GetMaxTime2(t1 mysql.NullTime, t2 mysql.NullTime) mysql.NullTime {
 	}
 	return mysql.NullTime{Valid: false}
 }
-

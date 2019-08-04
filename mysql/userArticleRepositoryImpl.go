@@ -6,25 +6,27 @@ import (
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
+	"strings"
 	"time"
 )
 
 type UserArticleRepositoryImpl struct {
-	DB *sql.DB
+	DB        *sql.DB
+	TableName string
 }
 
 func (db UserArticleRepositoryImpl) LikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, false, time.Now())
+	_, err := db.DB.Exec(strings.Replace("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", "article", db.TableName, -1), userId, articleId, false, time.Now())
 	return err
 }
 
 func (db UserArticleRepositoryImpl) DislikeArticle(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", userId, articleId, true, time.Now())
+	_, err := db.DB.Exec(strings.Replace("insert into articleLikes (userId, articleId, dislike, timestamp) values(?,?,?,?)", "article", db.TableName, -1), userId, articleId, true, time.Now())
 	return err
 }
 
 func (db UserArticleRepositoryImpl) FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger) (bool, error) {
-	rows, err := db.DB.Query("select dislike from articleLikes WHERE userId = ? and articleId = ?", userId, articleId)
+	rows, err := db.DB.Query(strings.Replace("select dislike from articleLikes WHERE userId = ? and articleId = ?", "article", db.TableName, -1), userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "FINDUSERARTICLE", err.Error())
 		return false, errors.ArticleNotFoundError
@@ -42,17 +44,17 @@ func (db UserArticleRepositoryImpl) FindUserArticleDislike(userId int64, article
 }
 
 func (db UserArticleRepositoryImpl) SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error {
-	_, err := db.DB.Exec("update articleLikes set dislike = ?, timestamp = ? where userId=? and articleId = ?", dislike, time.Now(), userId, articleId)
+	_, err := db.DB.Exec(strings.Replace("update articleLikes set dislike = ?, timestamp = ? where userId=? and articleId = ?", "article", db.TableName, -1), dislike, time.Now(), userId, articleId)
 	return err
 }
 
 func (db UserArticleRepositoryImpl) RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("delete from articleLikes where userId=? and articleId = ?", userId, articleId)
+	_, err := db.DB.Exec(strings.Replace("delete from articleLikes where userId=? and articleId = ?", "article", db.TableName, -1), userId, articleId)
 	return err
 }
 
 func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
-	rows, err := db.DB.Query(`select a.*, 
+	rows, err := db.DB.Query(strings.Replace(`select a.*, 
 		 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
 		 (select max(uac.timestamp) from articleComments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
 		 	(select max(ucl.timestamp) from articleComments uac join articleCommentLikes ucl on ucl.commentId = uac.commentId 
@@ -64,7 +66,7 @@ func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64
 		 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
 		 		(select count(*) from articleComments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
 		 		from articles a 
-		 		where a.articleId = ?`,
+		 		where a.articleId = ?`, "article", db.TableName, -1),
 		userId, userId, userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "GETARTICLEUSER", err.Error())

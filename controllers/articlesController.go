@@ -26,10 +26,13 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 		datetime = domain.StringToDate("")
 	}
 	userArticles := domain.UserArticles{
-		LastTime:   datetime,
-		Logger:     logger,
-		UserId:     getAuthorizationToken(r),
-		Repository: mysql.UserArticlesRepositoryImpl{DB: mysql.DB},
+		LastTime: datetime,
+		Logger:   logger,
+		UserId:   getAuthorizationToken(r),
+		Repository: mysql.UserArticlesRepositoryImpl{
+			DB:        mysql.DB,
+			TableName: "article",
+		},
 	}
 	articles, err := userArticles.GetUserArticles()
 	if err != nil {
@@ -109,5 +112,8 @@ func prepareUserArticle(logger logger.Logger, r *http.Request) (domain.UserArtic
 	articleId := vars["articleId"]
 	id, err := strconv.ParseInt(articleId, 10, 64)
 	return domain.UserArticle{ArticleId: id, UserId: getAuthorizationToken(r), Logger: logger,
-		Repository: mysql.UserArticleRepositoryImpl{DB: mysql.DB}}, err
+		Repository: mysql.UserArticleRepositoryImpl{
+			DB:        mysql.DB,
+			TableName: "article",
+		}}, err
 }

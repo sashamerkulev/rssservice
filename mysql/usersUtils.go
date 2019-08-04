@@ -24,9 +24,9 @@ func GetUserIdByToken(userToken string) (userId int64, err error) {
 	return -1, errors.UserNotFoundError
 }
 
-func GetFirebaseIdByCommentId(commentId int64, logger logger.Logger) (string, error) {
-	rows, err := DB.Query("select ud.FirebaseId from articleCommentLikes ucl	join userdevices ud on ucl.userId = ud.userId " +
-		" where ucl.commentId = ?", commentId)
+func GetFirebaseIdByArticleCommentId(articleCommentId int64, logger logger.Logger) (string, error) {
+	rows, err := DB.Query("select ud.FirebaseId from articleCommentLikes ucl	join userdevices ud on ucl.userId = ud.userId "+
+		" where ucl.commentId = ?", articleCommentId)
 	if err != nil {
 		logger.Log("ERROR", "GETUSERINFO", err.Error())
 		return "", err

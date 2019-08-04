@@ -8,16 +8,18 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"sort"
+	"strings"
 	"time"
 )
 
 type ArticleCommentRepositoryImpl struct {
-	DB *sql.DB
+	DB        *sql.DB
+	TableName string
 }
 
 func (db ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
 	comments = make([]model.UserArticleComment, 0)
-	rows, err := db.DB.Query(`SELECT * FROM (
+	rows, err := db.DB.Query(strings.Replace(`SELECT * FROM (
 SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
 CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
 uac.Comment, uac.Timestamp, uac.Status,
@@ -32,7 +34,7 @@ JOIN users ui on ui.userId = uac.userId
 JOIN articles a on a.articleId = uac.articleId) b
 WHERE b.articleId = ? AND (b.Timestamp >= ? or (b.lastActivityDate >= ?))
 ;
-`, userId, userId, userId, articleId, lastArticleReadDate, lastArticleReadDate)
+`, "article", db.TableName, -1), userId, userId, userId, articleId, lastArticleReadDate, lastArticleReadDate)
 	if err != nil {
 		logger.Log("ERROR", "GETCOMMENTS", err.Error())
 		return comments, err
@@ -65,7 +67,7 @@ func (db ArticleCommentRepositoryImpl) AddComment(userId int64, articleId int64,
 		return
 	}
 	defer tx.Commit()
-	res, err := db.DB.Exec("INSERT INTO articleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?)", userId, articleId, time.Now(), comments, 0)
+	res, err := db.DB.Exec(strings.Replace("INSERT INTO articleComments(userId, articleId, timestamp, comment, status) VALUES(?,?,?,?,?)", "article", db.TableName, -1), userId, articleId, time.Now(), comments, 0)
 	if err != nil {
 		logger.Log("ERROR", "ADDCOMMENT", "userId="+fmt.Sprint(userId))
 		logger.Log("ERROR", "ADDCOMMENT", err.Error())
@@ -89,7 +91,7 @@ func (db ArticleCommentRepositoryImpl) DeleteComment(userId int64, commentId int
 		return
 	}
 	defer tx.Commit()
-	_, err = db.DB.Exec("DELETE FROM articleComments where commentId =?", commentId)
+	_, err = db.DB.Exec(strings.Replace("DELETE FROM articleComments where commentId =?", "article", db.TableName, -1), commentId)
 	if err != nil {
 		logger.Log("ERROR", "DELETECOMMENT", err.Error())
 		tx.Rollback()
@@ -139,7 +141,7 @@ WHERE uac.CommentId = ?
 }
 
 func (db ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentId int64, logger logger.Logger) (bool, error) {
-	rows, err := db.DB.Query("select dislike from articleCommentLikes WHERE userId = ? and commentId = ?", userId, commentId)
+	rows, err := db.DB.Query(strings.Replace("select dislike from articleCommentLikes WHERE userId = ? and commentId = ?", "article", db.TableName, -1), userId, commentId)
 	if err != nil {
 		logger.Log("ERROR", "FINDCOMMENTDISLIKE", err.Error())
 		return false, errors.CommentNotFoundError
@@ -157,21 +159,21 @@ func (db ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentI
 }
 
 func (db ArticleCommentRepositoryImpl) SetUserCommentDislikeTo(userId int64, commentId int64, dislike bool, logger logger.Logger) error {
-	_, err := db.DB.Exec("update articleCommentLikes set dislike = ?, timestamp = ? where userId=? and commentId = ?", dislike, time.Now(), userId, commentId)
+	_, err := db.DB.Exec(strings.Replace("update articleCommentLikes set dislike = ?, timestamp = ? where userId=? and commentId = ?", "article", db.TableName, -1), dislike, time.Now(), userId, commentId)
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) RemoveCommentDislike(userId int64, commentId int64, logger logger.Logger) error {
-	_, err := db.DB.Exec("delete from articleCommentLikes where userId=? and commentId = ?", userId, commentId)
+	_, err := db.DB.Exec(strings.Replace("delete from articleCommentLikes where userId=? and commentId = ?", "article", db.TableName, -1), userId, commentId)
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) LikeComment(userId int64, commentId int64, logger logger.Logger) (err error) {
-	_, err = db.DB.Exec("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, false, time.Now())
+	_, err = db.DB.Exec(strings.Replace("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", "article", db.TableName, -1), userId, commentId, false, time.Now())
 	return err
 }
 
 func (db ArticleCommentRepositoryImpl) DislikeComment(userId int64, commentId int64, logger logger.Logger) (err error) {
-	_, err = db.DB.Exec("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", userId, commentId, true, time.Now())
+	_, err = db.DB.Exec(strings.Replace("insert into articleCommentLikes (userId, commentId, dislike, timestamp) values(?,?,?,?)", "article", db.TableName, -1), userId, commentId, true, time.Now())
 	return err
 }

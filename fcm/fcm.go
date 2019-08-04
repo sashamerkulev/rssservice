@@ -23,13 +23,13 @@ func SendNotificationLikeArticleComment(userName string, commentId int64, dislik
 		logger.Log("ERROR", "SENDNOTIFICATIONNEWARTICLESMESSAGE", err.Error())
 		return
 	}
-	firebaseToken, err := mysql.GetFirebaseIdByCommentId(commentId, logger)
+	firebaseToken, err := mysql.GetFirebaseIdByArticleCommentId(commentId, logger)
 	if err != nil {
 		return
 	}
 	message := &messaging.Message{
 		Data: map[string]string{
-			"userName":     userName,
+			"userName":      userName,
 			"commentId":     fmt.Sprint(commentId),
 			"likeOrDislike": fmt.Sprint(dislike),
 		},

@@ -10,7 +10,7 @@ type SetupSourcesRepository interface {
 }
 
 type SetupSources struct {
-	Logger     logger.Logger
+	Logger logger.Logger
 }
 
 func (ss SetupSources) GetSources() ([]reader.Link, error) {

@@ -137,5 +137,8 @@ func prepareArticleCommentActivity(logger logger.Logger, r *http.Request) (domai
 		datetime = domain.StringToDate("")
 	}
 	return domain.ArticleComment{UserId: getAuthorizationToken(r), ArticleId: aId, CommentId: cId, Logger: logger,
-		Repository: mysql.ArticleCommentRepositoryImpl{DB: mysql.DB}}, nil
+		Repository: mysql.ArticleCommentRepositoryImpl{
+			DB:        mysql.DB,
+			TableName: "article",
+		}}, nil
 }

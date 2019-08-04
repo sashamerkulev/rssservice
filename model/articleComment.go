@@ -3,14 +3,14 @@ package model
 import "time"
 
 type ArticleComment struct {
-	CommentId int64
-	ArticleId int64
-	UserId    int64
-	Name      string
-	Comment   string
-	PubDate   time.Time
+	CommentId        int64
+	ArticleId        int64
+	UserId           int64
+	Name             string
+	Comment          string
+	PubDate          time.Time
 	LastActivityDate time.Time
-	Status    int
+	Status           int
 }
 
 type UserArticleComment struct {

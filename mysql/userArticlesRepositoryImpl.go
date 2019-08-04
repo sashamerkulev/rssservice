@@ -6,17 +6,19 @@ import (
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/model"
 	"sort"
+	"strings"
 	"time"
 )
 
 type UserArticlesRepositoryImpl struct {
-	DB *sql.DB
+	DB        *sql.DB
+	TableName string
 }
 
 func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) ([]model.ArticleUser, error) {
 	results := make([]model.ArticleUser, 0)
 	currentTime := time.Now()
-	rows, err := db.DB.Query(`select * from (select a.*, 
+	rows, err := db.DB.Query(strings.Replace(`select * from (select a.*, 
 			 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
 			 (select max(uac.timestamp) from articleComments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
 			 	(select max(ucl.timestamp) from articleComments uac join articleCommentLikes ucl on ucl.commentId = uac.commentId 
@@ -28,7 +30,7 @@ func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time
 			 		(select count(*) from articleLikes aa where aa.articleId = a.articleId and not aa.dislike and aa.userid = ?) as userlike, 
 			 		(select count(*) from articleComments aa where aa.articleId = a.articleId and aa.userid = ?) as usercomment 
 			 		from articles a) b
-			 		where (b.PubDate >= ? and b.PubDate < ? or (b.lastUserLikeActivity >= ? or b.lastUserCommentActivity >= ? or b.lastUserLikeCommentActivity >= ?)) `,
+			 		where (b.PubDate >= ? and b.PubDate < ? or (b.lastUserLikeActivity >= ? or b.lastUserCommentActivity >= ? or b.lastUserLikeCommentActivity >= ?)) `, "article", db.TableName, -1),
 		userId, userId, userId, lastTime, currentTime, lastTime, lastTime, lastTime)
 	if err != nil {
 		logger.Log("ERROR", "GETARTICLEUSER", err.Error())
