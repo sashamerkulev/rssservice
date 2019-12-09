@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/sashamerkulev/rssservice/domain"
-	"github.com/sashamerkulev/rssservice/logger"
 	"net/http"
 	"strings"
 )
@@ -18,22 +17,18 @@ func getAuthorizationToken(r *http.Request) int64 {
 	return userId
 }
 
-func prepareRequest(w http.ResponseWriter, r *http.Request) (logger logger.Logger, err error) {
-	w.Header().Set("Content-Type", "application/json")
-	userId := getAuthorizationToken(r)
-	log, err := repository.GetLogger(userId, r.RemoteAddr), r.ParseForm()
-	if err != nil {
-		log.Log("ERROR", "PREPARE", err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-	}
-	return log, err
-}
-
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	_, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	fmt.Println(r.Form)
 	fmt.Println("path", r.URL.Path)
 	fmt.Println("scheme", r.URL.Scheme)
@@ -43,6 +38,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("key:", k)
 		fmt.Println("val:", strings.Join(v, ""))
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "[]")
 }

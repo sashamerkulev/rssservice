@@ -21,18 +21,31 @@ type ArticleCommentRepository interface {
 
 type ArticleComment struct {
 	UserId              int64
-	ArticleId           int64
 	CommentId           int64
+	Logger              logger.Logger
+	Repository          ArticleCommentRepository
+}
+
+type ArticleCommentGet struct {
+	UserId              int64
+	ArticleId           int64
 	LastArticleReadDate time.Time
 	Logger              logger.Logger
 	Repository          ArticleCommentRepository
 }
 
-func (ac ArticleComment) GetComments() (comments []model.UserArticleComment, err error) {
+type ArticleCommentAdd struct {
+	UserId              int64
+	ArticleId           int64
+	Logger              logger.Logger
+	Repository          ArticleCommentRepository
+}
+
+func (ac ArticleCommentGet) GetComments() (comments []model.UserArticleComment, err error) {
 	return ac.Repository.GetComments(ac.UserId, ac.ArticleId, ac.LastArticleReadDate, ac.Logger)
 }
 
-func (ac ArticleComment) AddComment(comments string) (comment model.UserArticleComment, err error) {
+func (ac ArticleCommentAdd) AddComment(comments string) (comment model.UserArticleComment, err error) {
 	commentId, err := ac.Repository.AddComment(ac.UserId, ac.ArticleId, comments, ac.Logger)
 	return ac.Repository.GetComment(ac.UserId, commentId, ac.Logger)
 }

@@ -7,17 +7,28 @@ import (
 )
 
 func setupSourcesHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	var ur = domain.SetupSources{Logger: logger}
-	sources, err := ur.GetSources()
+	err := r.ParseForm()
 	if err != nil {
-		logger.Log("ERROR", "SETUPSOURCESHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logger1 := repository.GetLogger(userId, r.RemoteAddr)
+
+	var ur = domain.SetupSources{Logger: logger1}
+	sources, err := ur.GetSources()
+	if err != nil {
+		logger1.Log("ERROR", "SETUPSOURCESHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(sources)
 }

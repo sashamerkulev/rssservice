@@ -13,7 +13,7 @@ type UserInfoRepositoryImpl struct {
 
 func (db UserInfoRepositoryImpl) GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error) {
 	rows, err := db.DB.Query("SELECT UserId, CASE WHEN LENGTH(UserName) = 0 OR UserName IS NULL THEN CONCAT('гость_', CONVERT(UserId, char)) ELSE UserName END AS UserName, "+
-		"COALESCE(UserPhone,'') FROM users where userId = ?", userId)
+		"COALESCE(UserPhone,'') AS UserPhone FROM users where userId = ?", userId)
 	if err != nil {
 		logger.Log("ERROR", "GETUSERINFO", err.Error())
 		return model.User{Name: ""}, nil

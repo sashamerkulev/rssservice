@@ -12,23 +12,32 @@ import (
 )
 
 func articlesHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
+	err := r.ParseForm()
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	logger1 := repository.GetLogger(userId, r.RemoteAddr)
+
 	params := r.URL.Query()["lastArticleReadDate"]
-	// loc, _ := time.LoadLocation("UTC")
 	var datetime time.Time
 	if len(params) > 0 {
 		datetime = domain.StringToDate(params[0])
-		logger.Log("DEBUG", "ARTICLESHANDLER", datetime.String())
+		logger1.Log("DEBUG", "ARTICLESHANDLER", datetime.String())
 	} else {
 		datetime = domain.StringToDate("")
 	}
+
 	userArticles := domain.UserArticles{
 		LastTime: datetime,
-		Logger:   logger,
-		UserId:   getAuthorizationToken(r),
+		Logger:   logger1,
+		UserId:   userId,
 		Repository: mysql.UserArticlesRepositoryImpl{
 			DB:        mysql.DB,
 			TableName: "article",
@@ -36,82 +45,120 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	articles, err := userArticles.GetUserArticles()
 	if err != nil {
-		w.WriteHeader(http.StatusForbidden)
+		w.WriteHeader(http.StatusBadRequest)
+		logger1.Log("ERROR", "ARTICLESHANDLER", err.Error())
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(articles)
-	logger.Log("DEBUG", "ARTICLES", r.RequestURI+" ("+datetime.String()+")"+" count: "+strconv.FormatInt(int64(len(articles)), 10))
 }
 
 func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	userArticle, err := prepareUserArticle(logger, r)
+	err := r.ParseForm()
 	if err != nil {
-		logger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logger1 := repository.GetLogger(userId, r.RemoteAddr)
+
+	userArticle, err := prepareUserArticle(logger1, r, userId)
+	if err != nil {
+		logger1.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	article, err := userArticle.Like()
 	if err != nil {
-		logger.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
+		logger1.Log("ERROR", "ARTICLESLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(article)
 }
 
 func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	userArticle, err := prepareUserArticle(logger, r)
+	err := r.ParseForm()
 	if err != nil {
-		logger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logger1 := repository.GetLogger(userId, r.RemoteAddr)
+
+	userArticle, err := prepareUserArticle(logger1, r, userId)
+	if err != nil {
+		logger1.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	article, err := userArticle.Dislike()
 	if err != nil {
-		logger.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
+		logger1.Log("ERROR", "ARTICLESDISLIKEHANDLER", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(article)
 }
 
 func articleHandler(w http.ResponseWriter, r *http.Request) {
-	logger, err := prepareRequest(w, r)
-	if err != nil {
+	userId := getAuthorizationToken(r)
+	if userId == -1 {
+		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	userArticle, err := prepareUserArticle(logger, r)
+	err := r.ParseForm()
 	if err != nil {
-		logger.Log("ERROR", "articleLikeHandler", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	logger1 := repository.GetLogger(userId, r.RemoteAddr)
+
+	userArticle, err := prepareUserArticle(logger1, r, userId)
+	if err != nil {
+		logger1.Log("ERROR", "articleLikeHandler", err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	article, err := userArticle.GetUserArticle()
 	if err != nil {
-		logger.Log("ERROR", "articleLikeHandler", err.Error())
+		logger1.Log("ERROR", "articleLikeHandler", err.Error())
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(article)
 }
 
-func prepareUserArticle(logger logger.Logger, r *http.Request) (domain.UserArticle, error) {
+func prepareUserArticle(logger logger.Logger, r *http.Request, userId int64) (domain.UserArticle, error) {
 	vars := mux.Vars(r)
 	articleId := vars["articleId"]
 	id, err := strconv.ParseInt(articleId, 10, 64)
-	return domain.UserArticle{ArticleId: id, UserId: getAuthorizationToken(r), Logger: logger,
+	return domain.UserArticle{ArticleId: id, UserId: userId, Logger: logger,
 		Repository: mysql.UserArticleRepositoryImpl{
 			DB:        mysql.DB,
 			TableName: "article",
