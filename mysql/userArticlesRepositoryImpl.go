@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 	"sort"
 	"strings"
 	"time"
@@ -15,8 +15,8 @@ type UserArticlesRepositoryImpl struct {
 	TableName string
 }
 
-func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) ([]model.ArticleUser, error) {
-	results := make([]model.ArticleUser, 0)
+func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time.Time, logger logger.Logger) ([]models.ArticleUser, error) {
+	results := make([]models.ArticleUser, 0)
 	currentTime := time.Now()
 	rows, err := db.DB.Query(strings.Replace(`select * from (select a.*, 
 			 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
@@ -41,7 +41,7 @@ func (db UserArticlesRepositoryImpl) GetUserArticles(userId int64, lastTime time
 		var lastUserCommentActivity mysql.NullTime
 		var lastUserLikeCommentActivity mysql.NullTime
 
-		article := model.ArticleUser{}
+		article := models.ArticleUser{}
 		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
 			&article.PubDate, &article.Category, &article.PictureUrl,
 			&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,

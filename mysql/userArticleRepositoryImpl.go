@@ -5,7 +5,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 	"strings"
 	"time"
 )
@@ -53,7 +53,7 @@ func (db UserArticleRepositoryImpl) RemoveUserArticleDislike(userId int64, artic
 	return err
 }
 
-func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error) {
+func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64, logger logger.Logger) (models.ArticleUser, error) {
 	rows, err := db.DB.Query(strings.Replace(`select a.*, 
 		 (select max(ual.timestamp) from articleLikes ual where ual.articleId = a.articleId ) as lastUserLikeActivity, 
 		 (select max(uac.timestamp) from articleComments uac where uac.articleId = a.articleId ) as lastUserCommentActivity, 
@@ -70,13 +70,13 @@ func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64
 		userId, userId, userId, articleId)
 	if err != nil {
 		logger.Log("ERROR", "GETARTICLEUSER", err.Error())
-		return model.ArticleUser{}, nil
+		return models.ArticleUser{}, nil
 	}
 	if rows.Next() {
 		var lastUserLikeActivity mysql.NullTime
 		var lastUserCommentActivity mysql.NullTime
 		var lastUserLikeCommentActivity mysql.NullTime
-		article := model.ArticleUser{}
+		article := models.ArticleUser{}
 		err := rows.Scan(&article.ArticleId, &article.SourceName, &article.Title, &article.Link, &article.Description,
 			&article.PubDate, &article.Category, &article.PictureUrl,
 			&lastUserLikeActivity, &lastUserCommentActivity, &lastUserLikeCommentActivity,
@@ -88,5 +88,5 @@ func (db UserArticleRepositoryImpl) GetUserArticle(userId int64, articleId int64
 		}
 		return article, nil
 	}
-	return model.ArticleUser{}, errors.ArticleNotFoundError
+	return models.ArticleUser{}, errors.ArticleNotFoundError
 }

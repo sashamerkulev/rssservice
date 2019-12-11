@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/reader"
+	"github.com/sashamerkulev/rssservice/models"
 )
 
 type MainRepositoryImpl struct {
@@ -18,8 +18,6 @@ type UserDbLogger struct {
 
 var DB *sql.DB
 
-func (MainRepositoryImpl) Open() error {
-	mysql, err := sql.Open("mysql", "news:News,News@/dbnews?parseTime=true")
 func (MainRepositoryImpl) Open(connectionString string) error {
 	mysql, err := sql.Open("mysql", connectionString)
 	if err != nil {
@@ -45,6 +43,6 @@ func (MainRepositoryImpl) GetUserIdByToken(token string) (int64, error) {
 	return GetUserIdByToken(token)
 }
 
-func (MainRepositoryImpl) GetSources() ([]reader.Link, error) {
-	return reader.Urls, nil
+func (MainRepositoryImpl) GetSources() ([]models.Link, error) {
+	return models.Urls, nil
 }

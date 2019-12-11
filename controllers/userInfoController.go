@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"github.com/sashamerkulev/rssservice/domain"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 	"github.com/sashamerkulev/rssservice/mysql"
 	"net/http"
 )
@@ -53,7 +53,7 @@ func usersUpdateHandler(w http.ResponseWriter, r *http.Request) {
 	finishUserResponse(w, user, err, logger1)
 }
 
-func finishUserResponse(w http.ResponseWriter, user model.User, err error, logger logger.Logger) {
+func finishUserResponse(w http.ResponseWriter, user models.User, err error, logger logger.Logger) {
 	if err != nil {
 		logger.Log("ERROR", "FINISH", err.Error())
 		w.WriteHeader(http.StatusBadRequest)

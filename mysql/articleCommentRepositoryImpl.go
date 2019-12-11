@@ -6,7 +6,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 	"sort"
 	"strings"
 	"time"
@@ -17,8 +17,8 @@ type ArticleCommentRepositoryImpl struct {
 	TableName string
 }
 
-func (db ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []model.UserArticleComment, err error) {
-	comments = make([]model.UserArticleComment, 0)
+func (db ArticleCommentRepositoryImpl) GetComments(userId int64, articleId int64, lastArticleReadDate time.Time, logger logger.Logger) (comments []models.UserArticleComment, err error) {
+	comments = make([]models.UserArticleComment, 0)
 	rows, err := db.DB.Query(strings.Replace(`SELECT * FROM (
 SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
 CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
@@ -41,7 +41,7 @@ WHERE b.articleId = ? AND (b.Timestamp >= ? or (b.lastActivityDate >= ?))
 	}
 	for rows.Next() {
 		var lastActivityDate mysql.NullTime
-		result := model.UserArticleComment{}
+		result := models.UserArticleComment{}
 		err := rows.Scan(&result.CommentId, &result.ArticleId, &result.UserId, &result.Name, &result.Comment, &result.PubDate,
 			&result.Status, &lastActivityDate, &result.Likes, &result.Dislikes, &result.Like, &result.Dislike, &result.Owner)
 		if lastActivityDate.Valid {
@@ -101,7 +101,7 @@ func (db ArticleCommentRepositoryImpl) DeleteComment(userId int64, commentId int
 
 }
 
-func (db ArticleCommentRepositoryImpl) GetComment(userId int64, commentId int64, logger logger.Logger) (comment model.UserArticleComment, err error) {
+func (db ArticleCommentRepositoryImpl) GetComment(userId int64, commentId int64, logger logger.Logger) (comment models.UserArticleComment, err error) {
 	rows, err := db.DB.Query(`
 SELECT uac.CommentId, uac.ArticleId, uac.UserId, 
 CASE WHEN LENGTH(ui.UserName) = 0 OR ui.UserName IS NULL THEN CONCAT('гость_', CONVERT(ui.UserId, char)) ELSE ui.UserName END AS UserName, 
@@ -120,11 +120,11 @@ WHERE uac.CommentId = ?
 `, userId, userId, userId, commentId)
 	if err != nil {
 		logger.Log("ERROR", "ADDCOMMENT", err.Error())
-		return model.UserArticleComment{}, err
+		return models.UserArticleComment{}, err
 	}
 	if rows.Next() {
 		var lastActivityDate mysql.NullTime
-		result := model.UserArticleComment{}
+		result := models.UserArticleComment{}
 		err := rows.Scan(&result.CommentId, &result.ArticleId, &result.UserId, &result.Name, &result.Comment, &result.PubDate,
 			&result.Status, &lastActivityDate, &result.Likes, &result.Dislikes, &result.Like, &result.Dislike, &result.Owner)
 		if lastActivityDate.Valid {
@@ -137,7 +137,7 @@ WHERE uac.CommentId = ?
 		}
 		return result, nil
 	}
-	return model.UserArticleComment{}, errors.CommentNotFoundError
+	return models.UserArticleComment{}, errors.CommentNotFoundError
 }
 
 func (db ArticleCommentRepositoryImpl) FindCommentDislike(userId int64, commentId int64, logger logger.Logger) (bool, error) {

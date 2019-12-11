@@ -2,11 +2,11 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 )
 
 type UserInfoRepository interface {
-	GetUserInfo(userId int64, logger logger.Logger) (user model.User, err error)
+	GetUserInfo(userId int64, logger logger.Logger) (user models.User, err error)
 }
 
 type UserInfo struct {
@@ -15,6 +15,6 @@ type UserInfo struct {
 	Repository UserInfoRepository
 }
 
-func (ui UserInfo) GetUserInfo() (user model.User, err error) {
+func (ui UserInfo) GetUserInfo() (user models.User, err error) {
 	return ui.Repository.GetUserInfo(ui.UserId, ui.Logger)
 }

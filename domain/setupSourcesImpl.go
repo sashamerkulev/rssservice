@@ -2,17 +2,17 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/reader"
+	"github.com/sashamerkulev/rssservice/models"
 )
 
 type SetupSourcesRepository interface {
-	GetSources() ([]reader.Link, error)
+	GetSources() ([]models.Link, error)
 }
 
 type SetupSources struct {
 	Logger logger.Logger
 }
 
-func (ss SetupSources) GetSources() ([]reader.Link, error) {
-	return reader.Urls, nil
+func (ss SetupSources) GetSources() ([]models.Link, error) {
+	return models.Urls, nil
 }

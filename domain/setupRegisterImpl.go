@@ -4,7 +4,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sashamerkulev/rssservice/errors"
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 	"time"
 )
 
@@ -24,22 +24,22 @@ type SetupRegister struct {
 
 var signingKey = []byte("secret")
 
-func (ru SetupRegister) RegisterUser() (user model.User, err error) {
+func (ru SetupRegister) RegisterUser() (user models.User, err error) {
 	userId, err := ru.Repository.FindUserIdByDeviceId(ru.SetupId, ru.Logger)
 	if err == nil {
 		token, _ := getJwtToken(ru.SetupId)
 		err = ru.Repository.AddTokenForUserIdAndDeviceId(userId, ru.SetupId, token, ru.Logger)
 		if err != nil {
-			return model.User{}, errors.UserRegistrationError
+			return models.User{}, errors.UserRegistrationError
 		}
-		return model.User{UserId: userId, Name: "", Phone: "", Token: token}, err
+		return models.User{UserId: userId, Name: "", Phone: "", Token: token}, err
 	} else {
 		token, _ := getJwtToken(ru.SetupId)
 		userId, err := ru.Repository.RegisterUser(ru.SetupId, ru.FirebaseId, token, ru.Logger)
 		if err != nil {
-			return model.User{}, errors.UserRegistrationError
+			return models.User{}, errors.UserRegistrationError
 		}
-		return model.User{UserId: userId, Name: "", Phone: "", Token: token}, err
+		return models.User{UserId: userId, Name: "", Phone: "", Token: token}, err
 	}
 }
 

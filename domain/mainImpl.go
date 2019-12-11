@@ -2,17 +2,16 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/reader"
+	"github.com/sashamerkulev/rssservice/models"
 	"time"
 )
 
 type MainRepository interface {
-	Open() error
 	Open(connectionString string) error
 	Close() error
 	GetLogger(userId int64, userIP string) logger.Logger
 	GetUserIdByToken(token string) (int64, error)
-	GetSources() ([]reader.Link, error)
+	GetSources() ([]models.Link, error)
 }
 
 func StringToDate(date string) time.Time {

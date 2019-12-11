@@ -2,7 +2,7 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 )
 
 type UserUpdateRepository interface {
@@ -17,7 +17,7 @@ type UserUpdate struct {
 	Repository UserUpdateRepository
 }
 
-func (uu UserUpdate) UpdateUser() (user model.User, err error) {
+func (uu UserUpdate) UpdateUser() (user models.User, err error) {
 	err = uu.Repository.UpdateUser(uu.UserId, uu.Name, uu.Phone, uu.Logger)
-	return model.User{UserId: uu.UserId, Name: uu.Name, Phone: uu.Phone}, err
+	return models.User{UserId: uu.UserId, Name: uu.Name, Phone: uu.Phone}, err
 }

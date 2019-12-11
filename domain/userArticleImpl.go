@@ -2,7 +2,7 @@ package domain
 
 import (
 	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
+	"github.com/sashamerkulev/rssservice/models"
 )
 
 type UserArticleRepository interface {
@@ -11,7 +11,7 @@ type UserArticleRepository interface {
 	FindUserArticleDislike(userId int64, articleId int64, logger logger.Logger) (bool, error)
 	SetUserArticleDislikeTo(userId int64, articleId int64, dislike bool, logger logger.Logger) error
 	RemoveUserArticleDislike(userId int64, articleId int64, logger logger.Logger) error
-	GetUserArticle(userId int64, articleId int64, logger logger.Logger) (model.ArticleUser, error)
+	GetUserArticle(userId int64, articleId int64, logger logger.Logger) (models.ArticleUser, error)
 }
 
 type UserArticle struct {
@@ -21,7 +21,7 @@ type UserArticle struct {
 	Repository UserArticleRepository
 }
 
-func (ua UserArticle) Like() (model.ArticleUser, error) {
+func (ua UserArticle) Like() (models.ArticleUser, error) {
 	// if no likes or dislike - add like
 	// if dislike - change to like
 	// if like - remove like
@@ -36,12 +36,12 @@ func (ua UserArticle) Like() (model.ArticleUser, error) {
 		err = ua.Repository.LikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
 	}
 	if err != nil {
-		return model.ArticleUser{}, err
+		return models.ArticleUser{}, err
 	}
 	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }
 
-func (ua UserArticle) Dislike() (model.ArticleUser, error) {
+func (ua UserArticle) Dislike() (models.ArticleUser, error) {
 	// if no likes or dislike - add dislike
 	// if dislike - remove dislike
 	// if like - change to dislike
@@ -56,11 +56,11 @@ func (ua UserArticle) Dislike() (model.ArticleUser, error) {
 		err = ua.Repository.DislikeArticle(ua.UserId, ua.ArticleId, ua.Logger)
 	}
 	if err != nil {
-		return model.ArticleUser{}, err
+		return models.ArticleUser{}, err
 	}
 	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }
 
-func (ua UserArticle) GetUserArticle() (model.ArticleUser, error) {
+func (ua UserArticle) GetUserArticle() (models.ArticleUser, error) {
 	return ua.Repository.GetUserArticle(ua.UserId, ua.ArticleId, ua.Logger)
 }

@@ -1,13 +1,6 @@
-package reader
+package models
 
-import (
-	"encoding/xml"
-	"github.com/sashamerkulev/rssservice/logger"
-	"github.com/sashamerkulev/rssservice/model"
-	"io/ioutil"
-	"net/http"
-	"time"
-)
+import "time"
 
 type Link struct {
 	Link   string
@@ -33,7 +26,7 @@ var Urls = []Link{
 	{Link: "http://www.kp.ru/rss/allsections.xml", Layout: time.RFC1123Z, Name: "kp", Title: "Комсомольская правда"},
 	{Link: "http://www.km.ru/rss/main", Layout: time.RFC1123Z, Name: "km", Title: "Кирил и Мефодий"},
 	{Link: "http://feeds.feedburner.com/aftershock/news", Layout: time.RFC1123Z, Name: "aftershock", Title: "Aftershock"},
-	{Link: "http://otredakcii.odnako.org/rss/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "odnako", Title: "Однако"},
+	//{Link: "http://otredakcii.odnako.org/rss/", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "odnako", Title: "Однако"},
 	{Link: "http://www.aif.ru/rss/all.php", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "aif", Title: "Аргументы и факты"},
 	{Link: "http://feeds.bbci.co.uk/russian/rss.xml", Layout: "Mon, _2 Jan 2006 15:04:05 MST", Name: "bbcrussian", Title: "BBC Russian"},
 	{Link: "http://tass.ru/rss/v2.xml", Layout: "Mon, _2 Jan 2006 15:04:05 -0700", Name: "tass", Title: "ТАСС"},
@@ -46,103 +39,4 @@ var Urls = []Link{
 	{Link: "https://sdelanounas.ru/index/rss/", Layout: time.RFC1123Z, Name: "sdelanounas", Title: "Сделано у нас"},
 	//{Link:"http://www.rosbalt.ru/feed/", Layout: time.RFC1123Z, Name: "rosbalt", Title: "Росбалт"},
 	//{Link:"http://feeds.feedburner.com/iarex/?utm_source=social-icons&utm_medium=cpc&utm_campaign=web", Layout: time.RFC1123Z, Name: "iarex", Title: "ИА REX"},
-}
-
-type rss2 struct {
-	XMLName xml.Name `xml:"rss"`
-	Version string   `xml:"version,attr"`
-	// Required
-	Title       string `xml:"channel>title"`
-	Link        string `xml:"channel>link"`
-	Description string `xml:"channel>description"`
-	// Optional
-	PubDate  string `xml:"channel>pubDate"`
-	ItemList []item `xml:"channel>item"`
-}
-
-type enclosure struct {
-	Url    string `xml:"url,attr"`
-	Length int64  `xml:"length,attr"`
-	Type   string `xml:"type,attr"`
-}
-
-type item struct {
-	// Required
-	Title       string `xml:"title"`
-	Link        string `xml:"link"`
-	Description string `xml:"description"`
-	// Optional
-	Content   string    `xml:"encoded"`
-	PubDate   string    `xml:"pubDate"`
-	Comments  string    `xml:"comments"`
-	Enclosure enclosure `xml:"enclosure"`
-	Category  string    `xml:"category"`
-	Guid      string    `xml:"guid"`
-}
-
-func read(url string, bytes chan []byte, logger logger.Logger) {
-	resp, err := http.Get(url)
-	if err != nil {
-		logger.Log("ERROR", "READ ("+url+")", err.Error())
-		bytes <- make([]byte, 0)
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		logger.Log("ERROR", "READ ("+url+")", err.Error())
-		bytes <- make([]byte, 0)
-		return
-	}
-	bytes <- body
-}
-
-func parse(name string, bytes []byte, items chan []item, logger logger.Logger) {
-	if len(bytes) <= 0 {
-		items <- make([]item, 0)
-		return
-	}
-	r := rss2{}
-	err := xml.Unmarshal(bytes, &r)
-	if err != nil {
-		logger.Log("ERROR", "PARSE ("+name+")", err.Error())
-		items <- make([]item, 0)
-		return
-	}
-	items <- r.ItemList
-}
-
-func save(saver model.ConsumerArticleFunc, id int, items []item, logger logger.Logger) {
-	if len(items) <= 0 {
-		return
-	}
-	var articles = make([]model.Article, 0)
-	for i := 0; i < len(items); i++ {
-		date, err := time.Parse(Urls[id].Layout, items[i].PubDate)
-		if err == nil {
-			article := model.Article{
-				SourceName:  Urls[id].Name,
-				Category:    items[i].Category,
-				Description: string(items[i].Description),
-				Link:        items[i].Link,
-				PubDate:     date,
-				Title:       items[i].Title,
-				PictureUrl:  items[i].Enclosure.Url,
-			}
-			articles = append(articles, article)
-		} else {
-			logger.Log("ERROR", "SAVE ("+Urls[i].Name+")", err.Error())
-		}
-	}
-	saver(articles, logger)
-}
-
-func Do(consumer model.ConsumerArticleFunc, logger logger.Logger) {
-	for i := 0; i < len(Urls); i++ {
-		bytes := make(chan []byte)
-		items := make(chan []item)
-		go read(Urls[i].Link, bytes, logger)
-		go parse(Urls[i].Name, <-bytes, items, logger)
-		go save(consumer, i, <-items, logger)
-	}
 }
