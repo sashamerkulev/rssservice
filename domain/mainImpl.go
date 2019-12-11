@@ -8,6 +8,7 @@ import (
 
 type MainRepository interface {
 	Open() error
+	Open(connectionString string) error
 	Close() error
 	GetLogger(userId int64, userIP string) logger.Logger
 	GetUserIdByToken(token string) (int64, error)

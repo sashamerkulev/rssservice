@@ -39,6 +39,8 @@ func wipeActivities(logger logger.Logger) {
 func main() {
 	repository = mysql.MainRepositoryImpl{}
 	err := repository.Open()
+	cfg := config.GetConfig()
+	err := repository.Open(cfg.Connection.Mysql)
 	if err != nil {
 		var log = logger.ConsoleLogger{}
 		log.Log("ERROR", "MAIN", "Can't open DB. The service will be closed.")

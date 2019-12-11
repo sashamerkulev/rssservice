@@ -1,0 +1,2 @@
+[Connection]
+mysql = "news:News,News@/dbnews?parseTime=true"

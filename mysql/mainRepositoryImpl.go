@@ -20,6 +20,8 @@ var DB *sql.DB
 
 func (MainRepositoryImpl) Open() error {
 	mysql, err := sql.Open("mysql", "news:News,News@/dbnews?parseTime=true")
+func (MainRepositoryImpl) Open(connectionString string) error {
+	mysql, err := sql.Open("mysql", connectionString)
 	if err != nil {
 		return err
 	}
