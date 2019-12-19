@@ -1,7 +1,6 @@
 package domain
 
 import (
-	"github.com/sashamerkulev/rssservice/fcm"
 	"github.com/sashamerkulev/rssservice/logger"
 	"github.com/sashamerkulev/rssservice/models"
 	"time"
@@ -72,9 +71,9 @@ func (ac ArticleComment) LikeComment() (comment models.UserArticleComment, err e
 		return models.UserArticleComment{}, err
 	}
 	c, e := ac.Repository.GetComment(ac.UserId, ac.CommentId, ac.Logger)
-	if e == nil {
-		fcm.SendNotificationLikeArticleComment(c.Name, ac.CommentId, false, ac.Logger)
-	}
+	//if e == nil {
+	//	fcm.SendNotificationLikeArticleComment(c.Name, ac.CommentId, false, ac.Logger)
+	//}
 	return c, e
 }
 
@@ -96,8 +95,8 @@ func (ac ArticleComment) DislikeComment() (comment models.UserArticleComment, er
 		return models.UserArticleComment{}, err
 	}
 	c, e := ac.Repository.GetComment(ac.UserId, ac.CommentId, ac.Logger)
-	if e == nil {
-		fcm.SendNotificationLikeArticleComment(c.Name, ac.CommentId, true, ac.Logger)
-	}
+	//if e == nil {
+	//	fcm.SendNotificationLikeArticleComment(c.Name, ac.CommentId, true, ac.Logger)
+	//}
 	return c, e
 }
