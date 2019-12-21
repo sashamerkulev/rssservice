@@ -1,2 +1,4 @@
 [Connection]
 mysql = "news:News,News@/dbnews?parseTime=true"
+[Server]
+port = ":9000"

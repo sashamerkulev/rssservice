@@ -20,5 +20,5 @@ func main() {
 		return
 	}
 	defer repository.Close()
-	controllers.Init(repository)
+	controllers.Init(repository, cfg.Server.Port)
 }

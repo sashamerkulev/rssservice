@@ -9,6 +9,9 @@ type Config struct {
 	Connection struct {
 		Mysql string
 	}
+	Server struct {
+		Port string
+	}
 }
 
 func GetConfig() (cfg Config) {

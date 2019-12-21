@@ -44,7 +44,7 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "[]")
 }
 
-func Init(_repository domain.MainRepository) {
+func Init(_repository domain.MainRepository, port string) {
 	repository = _repository
 	r := mux.NewRouter()
 	r.HandleFunc("/", homeHandler).Methods("GET", "POST", "PUT", "DELETE")
@@ -72,5 +72,5 @@ func Init(_repository domain.MainRepository) {
 	r.HandleFunc("/users/downloadPhoto", authorisedUserDownloadPhotoHandler).Methods("GET")
 	r.HandleFunc("/users/{userId}/downloadPhoto", userDownloadPhotoHandler).Methods("GET")
 
-	panic(http.ListenAndServe(":9000", r))
+	panic(http.ListenAndServe(port, r))
 }
