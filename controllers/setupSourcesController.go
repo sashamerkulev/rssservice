@@ -20,7 +20,8 @@ func setupSourcesHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger1 := repository.GetLogger(userId, r.RemoteAddr)
 
-	var ur = domain.SetupSources{Logger: logger1}
+	ss, err := repository.GetSources()
+	var ur = domain.SetupSources{Logger: logger1, Sources: ss}
 	sources, err := ur.GetSources()
 	if err != nil {
 		logger1.Log("ERROR", "SETUPSOURCESHANDLER", err.Error())

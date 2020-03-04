@@ -8,6 +8,7 @@ import (
 )
 
 type MainRepositoryImpl struct {
+	Sources []models.Link
 }
 
 type UserDbLogger struct {
@@ -43,6 +44,6 @@ func (MainRepositoryImpl) GetUserIdByToken(token string) (int64, error) {
 	return GetUserIdByToken(token)
 }
 
-func (MainRepositoryImpl) GetSources() ([]models.Link, error) {
-	return models.Urls, nil
+func (r MainRepositoryImpl) GetSources() ([]models.Link, error) {
+	return r.Sources, nil
 }

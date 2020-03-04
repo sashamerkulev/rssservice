@@ -11,8 +11,9 @@ type SetupSourcesRepository interface {
 
 type SetupSources struct {
 	Logger logger.Logger
+	Sources []models.Link
 }
 
 func (ss SetupSources) GetSources() ([]models.Link, error) {
-	return models.Urls, nil
+	return ss.Sources, nil
 }
