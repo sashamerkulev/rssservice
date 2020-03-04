@@ -10,7 +10,7 @@ import (
 )
 
 func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -67,7 +67,7 @@ func usersUploadPhotoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func authorisedUserDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -106,7 +106,7 @@ func authorisedUserDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) 
 }
 
 func userDownloadPhotoHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return

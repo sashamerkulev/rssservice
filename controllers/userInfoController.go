@@ -10,7 +10,7 @@ import (
 )
 
 func userInfoHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -31,7 +31,7 @@ func userInfoHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func usersUpdateHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return

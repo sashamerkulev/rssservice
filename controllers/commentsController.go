@@ -13,7 +13,7 @@ import (
 )
 
 func articlesCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -46,7 +46,7 @@ func articlesCommentsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesDeleteCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -78,7 +78,7 @@ func articlesDeleteCommentsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesAddCommentsHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -112,7 +112,7 @@ func articlesAddCommentsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesCommentsLikeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -145,7 +145,7 @@ func articlesCommentsLikeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesCommentsDislikeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return

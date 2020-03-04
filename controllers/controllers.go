@@ -10,7 +10,7 @@ import (
 
 var repository domain.MainRepository
 
-func getAuthorizationToken(r *http.Request) int64 {
+func GetAuthorizationToken(r *http.Request) int64 {
 	token := r.Header.Get("Authorization")
 	token = strings.Replace(strings.ToLower(token), "bearer ", "", -1)
 	userId, _ := repository.GetUserIdByToken(token)
@@ -18,7 +18,7 @@ func getAuthorizationToken(r *http.Request) int64 {
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return

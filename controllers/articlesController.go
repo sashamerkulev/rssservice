@@ -12,7 +12,7 @@ import (
 )
 
 func articlesHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -56,7 +56,7 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -89,7 +89,7 @@ func articlesLikeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
@@ -122,7 +122,7 @@ func articlesDislikeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func articleHandler(w http.ResponseWriter, r *http.Request) {
-	userId := getAuthorizationToken(r)
+	userId := GetAuthorizationToken(r)
 	if userId == -1 {
 		w.WriteHeader(http.StatusForbidden)
 		return
