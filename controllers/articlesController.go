@@ -8,7 +8,6 @@ import (
 	"github.com/sashamerkulev/rssservice/mysql"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func articlesHandler(w http.ResponseWriter, r *http.Request) {
@@ -25,14 +24,7 @@ func articlesHandler(w http.ResponseWriter, r *http.Request) {
 
 	logger1 := repository.GetLogger(userId, r.RemoteAddr)
 
-	params := r.URL.Query()["lastArticleReadDate"]
-	var datetime time.Time
-	if len(params) > 0 {
-		datetime = domain.StringToDate(params[0])
-		logger1.Log("DEBUG", "ARTICLESHANDLER", datetime.String())
-	} else {
-		datetime = domain.StringToDate("")
-	}
+	datetime := GetStringParamsAsDate(r.URL.Query()["lastArticleReadDate"])
 
 	userArticles := domain.UserArticles{
 		LastTime: datetime,

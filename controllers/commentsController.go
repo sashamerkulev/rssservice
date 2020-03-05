@@ -9,7 +9,6 @@ import (
 	"github.com/sashamerkulev/rssservice/mysql"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 func articlesCommentsHandler(w http.ResponseWriter, r *http.Request) {
@@ -199,7 +198,6 @@ func prepareArticleCommentActivity(logger logger.Logger, r *http.Request, userId
 func prepareArticleCommentGet(logger logger.Logger, r *http.Request, userId int64) (domain.ArticleCommentGet, error) {
 	vars := mux.Vars(r)
 	articleId := vars["articleId"]
-	params := r.URL.Query()["lastCommentsReadDate"]
 	if articleId == "" {
 		logger.Log("ERROR", "ARTICLESCOMMENTSHANDLER", errors.EmptyParametersError.Error())
 		return domain.ArticleCommentGet{}, errors.EmptyParametersError
@@ -209,13 +207,7 @@ func prepareArticleCommentGet(logger logger.Logger, r *http.Request, userId int6
 		logger.Log("ERROR", "ARTICLESCOMMENTSHANDLER", "can't parse "+articleId)
 		return domain.ArticleCommentGet{}, errors.WrongArticleIdParameterError
 	}
-	var datetime time.Time
-	if len(params) > 0 {
-		datetime = domain.StringToDate(params[0])
-		logger.Log("DEBUG", "ARTICLESCOMMENTSHANDLER", datetime.String())
-	} else {
-		datetime = domain.StringToDate("")
-	}
+	var datetime = GetStringParamsAsDate(r.URL.Query()["lastCommentsReadDate"])
 	return domain.ArticleCommentGet{UserId: userId, ArticleId: aId, Logger: logger, LastArticleReadDate: datetime,
 		Repository: mysql.ArticleCommentRepositoryImpl{
 			DB:        mysql.DB,

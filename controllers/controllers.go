@@ -5,7 +5,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sashamerkulev/rssservice/domain"
 	"net/http"
+	"strconv"
 	"strings"
+	"time"
 )
 
 var repository domain.MainRepository
@@ -15,6 +17,27 @@ func GetAuthorizationToken(r *http.Request) int64 {
 	token = strings.Replace(strings.ToLower(token), "bearer ", "", -1)
 	userId, _ := repository.GetUserIdByToken(token)
 	return userId
+}
+
+func GetStringParamsAsInt(params []string, defaultValue int) int {
+	result := defaultValue
+	if len(params) > 0 {
+		id, err := strconv.Atoi(params[0])
+		if err != nil {
+			result = id
+		}
+	}
+	return result
+}
+
+func GetStringParamsAsDate(params []string) time.Time {
+	var datetime time.Time
+	if len(params) > 0 {
+		datetime = domain.StringToDate(params[0])
+	} else {
+		datetime = domain.StringToDate("")
+	}
+	return datetime
 }
 
 func homeHandler(w http.ResponseWriter, r *http.Request) {
